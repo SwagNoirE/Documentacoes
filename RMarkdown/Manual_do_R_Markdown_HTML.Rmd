@@ -1,0 +1,389 @@
+---
+title: "Manual do RMarkdown"
+date: "27 de Janeiro de 2022"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "light"
+    downcute_theme: "default"
+    toc: 4
+    toc_float: true
+    number_sections: false
+    md_extensions: -startnum
+    css: "CSS/styles.css"
+newpage_html_class: page-break
+---
+![](CSS/UFC.png)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = F)
+
+require(kableExtra)
+library(ggplot2)
+require(dplyr)
+data("mtcars")
+data("iris")
+```
+
+# Iniciando no rmarkdown
+
+## PDF
+
+  Se o documento for em PDF, apenas usando o LaTeX, consegue-se realizar de forma rápida e prática o trabalho de escrita.
+  
+  Comandos básicos usados:
+  Para delimitar a página do sumário, `\newpage` no início do documento. `\clearpage` serve para pular uma página, o comando `\tableofcontents` para criar um índice, e ainda usando `\usepackage[brazilian]{babel}`, todos os títulos são traduzidos, `\pagenumbering{gobble}` e `\pagenumbering{arabic}` servem para enumerar a página e número no formato escolhido, respectivamente. 
+  
+  Ambos os comandos devem ser colocados entre o cabeçalho e o corpo do documento ou apenas no cabeçalho com o comando `header-includes:` no YAML. Para definir o tamanho da página, o comando `geometry`, no defina a largura e altura do documento.
+  
+  O `fontsize` é comando básico do Rmarkdown que aceita apenas 10pt, 11pt, 12pt, apesar disso, se for preciso um tamanho diferente, use código em HTML em cada parágrafo, como `<font size = "1"> Este é meu texto </font>`, para essa mudança ou use códigos css no arquivo de estilo css no html_document:
+  
+```{rmarkdown}
+
+---
+title: "título"
+date: "data"
+output:
+  pdf_document: default
+  html_document:
+    css: "CSS/styles.css"
+---
+
+```
+  
+
+  Recomenda-se usar no `header-includes:` os seguintes pacotes LaTeX:
+  
+```{latex}
+
+\usepackage[brazilian]{babel} # "Traduz" todo o documento
+\usepackage{graphicx} # Adiciona externos(gráfico, imagem,
+                        #estilização deles etc.) do LaTeX
+\usepackage{fancyhdr} # Personaliza o cabeçalho e rodapé
+\usepackage{titling} # Controla o comando \maketitle e comando \thanks,
+                      #e torna as informações de \title ,
+                      #\author e \date permanentemente disponíveis
+\graphicspath{ {figures/} } # Procura imagem no diretório e trás ao LaTeX
+\usepackage{array} # Formata tabela
+\usepackage{float} # Reconfigura a aparência da figura e tabela.
+\floatplacement{figure}{H} # Contem a imagem na página
+
+```
+  
+  E antes de iniciar o texto:
+```{latex}
+
+\clearpage # Não enumera a página
+\thispagestyle{empty} # Cria uma página em branco
+\tableofcontents # Sumário
+\listoffigures # Lista de figuras
+\listoftables # Lista de tabelas
+\pagenumbering{arabic} # Numeração das páginas
+
+\newpage # Cria uma nova página
+
+```
+  
+  Se nescessário, ao longo do texto:
+```{latex}
+
+\pagebreak # Quebra de página
+
+```
+
+### Adicionando uma logo
+
+  Como o PDF trabalha com a linguagem LaTeX, a logo também será importada usando esta linguagem, dentro do `header-includes:`.
+
+### Cabeçalho e rodape
+```{latex}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+\fancyhf{}
+\setlength\headheight{28pt}
+\addtolength{\headheight}{1.0cm}
+\pagestyle{fancyplain}
+\fancyhead[L]{\includegraphics[height=1.2cm]{caminho_até_o_logo/logo.png}}
+\renewcommand{\headrulewidth}{0.4
+pt}
+\fancyfoot[LE,RO]{logo}
+\pagestyle{fancy}
+
+```
+
+ 
+### Estilização de fonte e background
+
+  Como utiliza-se o tinytex, o Rmarkdown se porta como o LaTeX, portanto, as especificações de fonte serão como `\setmainfont{Calibri Light}`.
+
+\newpage
+
+## HTML
+
+  Caso o documento seja HTML, não haverá mudanças muito significativas, pode ser alterada a paginação no output usando `geometry`(usado no LateX) ou especificações de tamanho máximo de tela, e escolher templates variados e uso de estilização em css(podendo inserir tanto no cabeçalho, como arquivo pré-existente, como também como bloco de código css). Isto vale para tamanho e estilo da fonte, background etc, na forma `html_document: css: "ArquivoEstilo.css"`.
+
+  Para exibir os dois ou mais formatos, o comando `rmarkdown::render('seu_arqivo.Rmd', output_format = 'all')` no cabeçalho é usado quando for especificado anteriormente os documentos.
+ 
+### Adicionando uma Logo
+ 
+  Uma logo pode ser importante dependendo do documento a ser produzido. A imagem se comportará como uma caixa que pode aumentar ou diminuir, mover-se para todas a direções que forem especificadas nos eixos x e y.
+ 
+1) Adicione a imagem no projeto diretório.
+2) Coloque as especificções no arquivo de estilo css e ajuste como neceário.
+
+```{css}
+
+ #TOC::before {
+  content: "";
+  display: block;
+  height: 200px;
+  margin: 20px 20px 40px 20px;
+  background-image: url("logo.png");
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+```
+
+### Estilização de fonte
+
+  Em html, toda e qualquer estilização é em sua maioria, feitas em css. Assim, adicione no arquivo de estilo em css:
+ 
+```{css}
+
+body {
+    font-family: 'Muli';
+    font-size: 19px;
+}
+
+```
+
+### Estilização de estrutura
+
+  Os blocos de códigos que aparecerem no texto podem ser roláveis e definidas as dimensões deles. Para que isso ocorra, insira no arquivo de estilo em css:
+  Definindo o scroll:
+  
+```{css}
+
+pre {
+  min-height: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 100px;
+}
+
+```
+  
+  Definindo as dimensões:
+  
+```{css}
+
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+
+```
+  
+
+  Os conteúdos de tabela ou gráfico pode ser colocadas em abas dentro da página. Isto facilita a organização de forma que os conteúdos estejam visiveis em seções paralelas.
+  Para isso ser possível, coloca-se o comando `{.tabset}` em uma seção de hierarquia superior a dos que serão mostrados.
+
+#### Resultados: {.tabset}
+
+##### Mapa
+
+ De vez em quando precisa-se usar geoprocessamento, utilizar o mapa para finalidades específicas. Aqui está um exemplo básico de como fazê-lo:
+ 
+```{r, warning=FALSE, message=FALSE, error=FALSE, include = TRUE, results='hide', fig.cap = "Mapa do Brazil"}
+
+#utils::remove.packages('geobr')
+#devtools::install_github("ipeaGIT/geobr", subdir = "r-package")
+library(geobr)
+library(sf)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+
+conj_dados = list_geobr()
+
+Brasil = read_country(year = 2020)
+Capitais = read_municipality(code_muni = 2304400, year=2020)
+Capitais2 = read_municipality(code_muni = 2611606, year=2020)
+Capitais22 = read_municipality(code_muni = 4314902, year=2020)
+Capitais222 = read_municipality(code_muni = 3550308, year=2020)
+Capitais2222 = read_municipality(code_muni = 1501402, year=2020)
+Capitais22222 = read_municipality(code_muni = 2927408, year=2020)
+Capitais222222 = read_municipality(code_muni = 5208707, year=2020)
+Estados = subset(Brasil, Brasil$abbrev_state == "BA")
+Estados2 = subset(Brasil, Brasil$abbrev_state == "CE")
+Estados3 = subset(Brasil, Brasil$abbrev_state == "GO")
+Estados4 = subset(Brasil, Brasil$abbrev_state == "PA")
+Estados5 = subset(Brasil, Brasil$abbrev_state == "PE")
+Estados6 = subset(Brasil, Brasil$abbrev_state == "RS")
+Estados7 = subset(Brasil, Brasil$abbrev_state == "SP")
+
+Estados = rbind(Estados, Estados2, Estados3, Estados4,
+                Estados5, Estados6, Estados7)
+
+Capitais = rbind(Capitais, Capitais2, Capitais22, Capitais222,
+                 Capitais2222, Capitais22222, Capitais222222)
+rm(Capitais2, Capitais22, Capitais222, Capitais2222,
+   Capitais22222, Capitais222222,Estados2, Estados3,
+   Estados4, Estados5, Estados6, Estados7)
+
+B = ggplot() +
+  geom_sf(data = Brasil, fill = "#F2F0D5",
+          color = "#668C4A", show.legend = F) +
+  geom_sf(data = Estados, 
+          aes(geometry = geom,
+              fill = as.character(abbrev_state))) +
+  geom_sf_label(data = Capitais, 
+          aes(geometry = geom,
+              label = name_muni),
+          fill = "#F2F0D5", color = "#668C4A",
+          size = 3 , show.legend = F) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color = "transparent"),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  xlab("") +
+  ylab("") +
+  labs(title = "Estados e Capitais",
+       fill = "Estados")
+
+#salvando...
+ggsave("Brasil.jpg", plot = B, width = 10, height = 10, units = "cm")
+
+plot(B)
+
+```
+
+\pagebreak
+
+##### Imagem
+
+Para que uma imagem possua título, adicione ao chunks de código: `fig.cap = "nome da figura"`.
+Já para referncia-la no próprio texto, use o código `\@ref(fig:nome_do_chunk)` usando o `bookdown::pdf_document2:`.
+  
+```{r, fig.dim=c(5, 3),fig.cap = "Mtcars"}
+par(mar = c(4, 4, .5, .1))
+plot(mpg ~ hp, data = mtcars, pch = 19)
+```
+
+##### Tabela
+
+Na tabela, use `\@ref(tab:nome_do_chunk)`.
+
+```{r}
+kbl(head(mtcars), caption = "Mtcars", align = "c") %>%
+   kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+\newpage
+# Usando o *Hiperlink*
+
+  Os hiperlinks são utilizados quando se referencia informações fora do documento, ou seja, na web. O texto principal normalmente fica em itálico, dentro de um colchete, enquanto o link de fato é colocado posteriormente dentro de um parêntesis.
+`[*Texto que aparece como link*](link do site)`
+
+[*Página ofical do Rmarkdown*](https://rmarkdown.rstudio.com/)
+
+  Ao se fazer um link dentro do próprio texto, não é necessário enumerar os níveis, o próprio título serve como identificador, portanto, a linkagem será como um hiperlink normal, mas sem os asteriscos na "palavra-link". Também é possivel fazer isso com listas, e, usando a extensão do `md_extensions: -startnum` no YAML elas se tornam mais sofisticadas.
+ 
+1)  [Referencia][HTML]
+2)  Dois
+3)  Três
+      i.   [Referencia em subitem][Tabelas e figuas]
+      ii.  Subdois
+      iii. Subtrês
+
+
+  Há a possibilidade de mudar a cor dos links. Apenas adicione código de cor para eles no arquivo estilo em css.
+
+```{css}
+
+/*----------------- links ---------------------*/
+
+a { 
+  color: #4e89bf;
+}
+
+```
+
+  Pode especificar até o que acontece quando o mouse passa pelo link.
+
+```{css}
+
+a:hover {
+  color: #A3CDD9; /* cor escura quando mouse passar por cima */
+    }
+
+```
+
+
+# Tabelas e figuas
+
+## Título
+
+ A tabela \@ref(tab:T1) gera a imagem \@ref(fig:ggmtcars).
+ 
+```{r, fig.cap = "Exemplo 1"}
+
+top_gap <- head(mtcars)
+
+knitr::kable(top_gap,
+             caption = "As primeiras 6 linhas do banco de dados, mtcars")%>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+## Rodape da tabela
+
+```{r, eval= T, fig.cap = "Exemplo 2"}
+
+kable(head(mtcars), caption = "Exemplo com rodapé") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>%
+  add_footnote(c("Footnote 1", "Have a good day."), notation = "number")
+
+```
+
+### Adição de notas
+
+```{r, eval= T}
+
+kbl(head(mtcars), caption = "Exemplo com notas no rodapé", align = "c") %>%
+  kable_styling(latex_options = c("striped", "hold_position"),
+full_width = F) %>%
+  footnote(general = "Here is a general comments of the table. ",
+           number = c("Footnote 1; ", "Footnote 2; "),
+           alphabet = c("Footnote A; ", "Footnote B; "))
+
+```
+
+## Figura de exempo
+
+ A figura de exemplo \@ref(fig:ggmtcars).
+
+```{r ggmtcars, fig.cap = "Exemplo de figura"}
+
+data(mtcars)
+mtcars$cyl <- as.factor(mtcars$cyl)
+ggplot(data = mtcars) +
+  geom_point(mapping = aes(x = mpg, y = wt))
+
+```
+
+# Links Úteis
+
+[*kable e KableExtra*](https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_pdf.pdf)
+
+[*Geobr*](https://github.com/ipeaGIT/geobr)

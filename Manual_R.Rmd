@@ -1,0 +1,2183 @@
+---
+title: "Manual R para HUWC"
+date: "23 de junho de 2021"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+```{css, echo = FALSE}
+.watch-out {
+  background-color: lightpink;
+  border: 3px solid red;
+  font-weight: bold;
+}
+```
+
+```{css, echo = F}
+
+h1 { color: rgb(255, 125, 0); }
+h2 { color: brown; }
+div.yellow pre { background-color: lightyellow; }
+pre.red pre.r { background-color: rgb(78, 132, 166); }
+
+.rededdie { 
+  background-color: rgb(158, 81, 50); color: white;
+  }
+.my_pink2 { background-color: rgb(255, 113, 181); color: white; border: 3px solid blue; }
+.my_span  { background-color: orange; font-family: courier}
+
+```
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, cache = FALSE, class.output = "rededdie")
+
+```
+
+***
+
+*Obs*:. 
+
+ Esses pacotes mascaram algumas funções do pacote base e/ou de outros.
+ Dependendo do que for preciso fazer, pode ser um problema, mas sempre há os fóruns do [RStudio](https://community.rstudio.com/) e do [StackOverflow](https://pt.stackoverflow.com/) que podem ter uma solução.
+
+# Carregar o banco de dados
+
+## 1.1) Carregar vários arquivos .csv dentro de uma pasta
+
+```{r, eval= FALSE , echo = TRUE}
+
+library(purrr)
+
+files <- list.files(path = "X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual R/
+                    Novo_Manual/dados/csv", full.names = TRUE)
+
+dados <- files %>%
+  map(~ read.csv2(.,stringsAsFactors = F)) %>%
+  reduce(rbind)
+
+rm(files, dados)
+
+```
+
+## 1.2) Carregar arquivo único em formato xlsx
+
+```{r, eval= FALSE , echo = TRUE}
+
+library(openxlsx)
+
+DADO = read.xlsx("X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual
+                 R/Novo_Manual/dados/xlsx/DADO.xlsx", sheet = 1)
+
+rm(DADO)
+
+```
+
+## 1.3) Carregar arquivo .dbc usando `for` e  "palavra-chave" na pasta
+
+```{r, eval= FALSE , echo = TRUE}
+
+library(read.dbc)
+
+files <- list.files("X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual R/Novo_Manual/
+                    dados/datasus", 
+                    full.names = TRUE, recursive = TRUE)
+#recursive: Mostra o nome do arquivo 
+#full.names: Mostra todo o caminho do arquivo
+
+filePA = files[grep("PA", files)]
+
+PA = data.frame()
+for(i in filePA)
+{
+  y = read.dbc(i,as.is = T)
+  y = subset(y,PA_CODUNI %in% c("2561492","2481286"))
+  PA = plyr::rbind.fill(PA,y)
+}
+
+rm(y,i)
+
+rm(PA, filePA, files)
+
+```
+
+## 1.4) Carregar Dataframes(BIGDatas) a partir de links da web
+
+```{r, eval= FALSE , echo = TRUE}
+
+library(purrr)
+library(stringr)
+library(dplyr)
+library(knitr)
+library(data.table)
+
+urls = c(
+  "http://geoservicos.inde.gov.br/geoserver/SPM/wms?service=WFS&version=1.0.
+  0&request=GetFeature&typeName=SPM:ODM_2009&outputFormat=CSV",
+            "http://geoservicos.inde.gov.br/geoserver/SPM/wms?service=WFS&
+  version=1.0.0&request=GetFeature&typeName=SPM:ODM_2010&outputFormat=CSV",
+            "http://geoservicos.inde.gov.br/geoserver/SPM/wms?service=
+  WFS&version=1.0.0&request=GetFeature&typeName=SPM:ODM_2011&outputFormat=CSV"
+  )
+
+#$++++++Cria um vetor com os nomes dos arquivos++++++
+
+files.names = map_chr(urls, str_extract, "X:/MON-AVAL-HUWC/Estagio_Estatistica/
+                      Manual R/Novo_Manual/dados/csv") %>% paste0(".csv")
+
+#$++++++Verifica os arquivos que ainda não foram++++++
+
+baixados
+files.not.downloades.indexes = !map_lgl(files.names, file.exists)
+
+#$++++++Baixa os arquivos que estão faltando++++++
+
+map2(urls[files.not.downloades.indexes],  
+     files.names[files.not.downloades.indexes], download.file)
+
+#$++++++lendo os arquivos++++++
+
+df = fread(files.names[1])
+df = fread(files.names[2])
+df = fread(files.names[3])
+
+rm(df, files.names, files.not.downloades.indexes, urls)
+
+```
+
+# Operações no Banco de Dados
+
+## 2.1) Somar todas as colunas do banco de dados
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+data("iris")
+
+iris$soma.petal = rowSums(cbind(iris$Petal.Length,
+                                iris$Petal.Width), na.rm = T)
+
+head(iris)
+
+```
+
+## 2.2) Organizar as colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+data("starwars")
+
+star = starwars %>%
+  select(name,
+         hair_color,
+         sex,
+         gender,
+         homeworld,
+         birth_year,
+         everything())
+
+head(star)
+
+```
+
+## 2.3) Ordenar as colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+data("starwars")
+
+#$++++++Ordenando++++++
+
+n1 = sort(names(starwars))
+
+star = starwars %>%
+  select(n1)
+
+rm(starwars, n1)
+
+head(star)
+
+```
+
+## 2.4) Substituir várias colunas com uma condição
+
+### 2.4.1) Forma 1
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x <- data.frame(
+  flg = c(0, 0, 1, 0, 0),
+  b = c("a", "pia", "nao", "esta", "suja"), 
+  c = c("c", "d", "a", "asdasd", "sddd"), 
+  stringsAsFactors = FALSE)
+
+x = x %>% 
+  mutate_at(vars(b, c), funs(if_else(flg == 1, NA_character_, .)))
+
+head(x)
+
+```
+
+### 2.4.2) Forma 2
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x <- data.frame(
+  flg = c(0, 0, 1, 0, 0),
+  b = c("a", "pia", "nao", "esta", "suja"), 
+  c = c("c", "d", "a", "asdasd", "sddd"), 
+  stringsAsFactors = FALSE)
+
+x = x %>% 
+  mutate_at(.vars = c("b", "c"), funs(if_else(flg == 1, NA_character_, .)))
+
+head(x)
+
+```
+
+### 2.4.3) Forma 3
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x <- data.frame(
+  flg = c(0, 2, 1, 0, 4),
+  b = c("a", "pia", "nao", "esta", "suja"),
+  c = c("c", "d", "a", "asdasd", "sddd"),
+  stringsAsFactors = FALSE)
+
+x = x %>% mutate_at(vars(b, c), 
+                  funs(if_else(flg == 1, NA_character_, .)))
+
+x = x %>% mutate(D = replace(vars(b, c), flg == 0, NA_character_))
+
+head(x)
+
+```
+
+## 2.5) Somar por linhas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+x <- matrix(1:9, nrow = 3, dimnames = list(c("X","Y","Z"), c("A","B","C")))
+
+x = as.data.frame(x)
+
+y = x %>%
+  mutate(
+    saida = rowSums(x, na.rm = TRUE))
+
+rm(x)
+
+head(y)
+
+```
+
+## 2.6) Remover objetos e manter outros objetos no "environment"
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x <- matrix(1:9, nrow = 3, dimnames = list(c("X","Y","Z"), c("A","B","C")))
+
+y <- data.frame(
+  a = 1:3,
+  b = c("a", "b", "c"),
+  stringsAsFactors = FALSE)
+
+z <- factor(c("a", "b", "b", "a"))
+
+A <- list(100:130, "R", list(TRUE, FALSE))
+
+int <- c(-1L, 2L, 4L)
+
+comp <- c(1 + 1i, 1 + 2i, 1 + 3i)
+
+rm(list = setdiff(ls(), c("x","y","z", "int")))
+
+rm(x, y, int, z)
+
+```
+
+## 2.7) Recodificação de valor e characteres
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+x <- c(2, 4)
+
+recode(as.character(x), "2" = "20", "4" = "40")
+
+data("starwars")
+
+df <- starwars %>%
+  mutate(eye_color = recode(eye_color, "blue" = "Azul", "brown" = "Castanho"))
+
+rm(starwars, x)
+
+head(df)
+
+```
+
+## 2.8) Extrair uma amostra
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+n = 1:nrow(starwars)
+head(n,10)
+
+x = sample(n, 10)
+
+starwars = starwars[x, ]
+
+rm(n, x)
+
+head(starwars)
+
+```
+
+## 2.9) Atributos no data.frame
+
+### 2.9.1) Incluir novo atributo
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data(starwars)
+
+attributes(starwars)
+
+
+attr(starwars,'season') <- '2010-2011'
+
+```
+
+### 2.9.2) Remover atributo
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data(starwars)
+
+attr(starwars, 'names') <- NULL
+
+attributes(starwars)
+
+```
+
+### 2.9.2) Anular todos os atributos
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data(starwars)
+ 
+attributes(starwars) = NULL
+
+```
+
+## 2.10) Subir linha na coluna
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+d1 <- c("2014-07-15", "2018-03-20", "2019-12-31", "2017-05-11")
+
+a = data.frame(d1)
+
+a = a %>% 
+  mutate(
+    d2 = c(d1[-1], NA),
+  )
+
+head(a)
+
+rm(d1)
+
+```
+
+## 2.11) Exportar “tabela” de dados para arquivo em Excel 
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(openxlsx)
+
+data1 = iris 
+
+data1 = data1[, c(5,1:4)] 
+
+wb <- createWorkbook() 
+
+addWorksheet(wb, "Sheet1")
+
+writeDataTable(wb, "Sheet1", x = data1, tableName = "dados_data1" )
+
+saveWorkbook(wb, "X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual R/Novo_Manual/dados/output/data1.xlsx", overwrite = TRUE)
+
+rm(data1)
+rm(wb)
+
+```
+
+
+## 2.12) Carregar arquivo Excel e atualiza-lo
+
+```{r, eval= FALSE , echo = TRUE}
+
+data2 = iris 
+
+data2 = data2[, c(1,2)] 
+
+rm(iris)
+
+wb <- loadWorkbook("X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual R/
+                   Novo_Manual/dados/output/data1.xlsx")
+
+addWorksheet(wb, "Sheet2")
+
+#$++++++CASO QUEIRA REMOVER, USE:++++++
+#removeTable(wb, sheet = "Sheet1", table = "dados_data1")
+
+writeDataTable(wb, "Sheet2", x = data2, tableName = "dados_data2" )
+
+saveWorkbook(wb, "X:/MON-AVAL-HUWC/Estagio_Estatistica/Manual R/
+             Novo_Manual/dados/output/data1.xlsx", overwrite = TRUE)
+
+rm(wb, data2)
+
+```
+
+# Formatação de números com dígitos
+
+## 3.1) Ponto decimal, espaços como marca grande e pontos como marca pequena
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x <- 12345.6789
+
+x = format(x, digits = 9, decimal.mark = ",",big.mark = " ",
+           small.mark = ".", small.interval = 3)
+
+head(x)
+
+```
+
+## 3.2) Porcentagem
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+y <- seq(0.5, 0.55, 0.01)
+
+y = sprintf("%.1f %%", 100*y)
+
+head(y)
+
+```
+
+## 3.3) Adicionar vírgula
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+z <- 123456789101112
+
+z = formatC(z, format = "f", big.mark = ",", digits = 0)
+
+head(z)
+
+```
+
+## 3.4) Imprimindo em 2 ou mais dígitos
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+a = seq(1, 12, 1)
+
+a = sprintf("%02d", a)
+
+head(a)
+
+```
+
+# Manipulação de campos string
+
+## 4.1)	Seleção de nomes a partir de um caractere string
+
+### 4.1.1) Usando o `grep`
+
+````{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+df <- data.frame(
+  a1 = factor(c("Hi", "Med", "Hi", "Low"), levels = c("Low", "Med", "Hi"), 
+              ordered = TRUE),
+  a2 = c("A", "D", "A", "C"), 
+  a3 = c(8, 3, 9, 9),
+  b1 = c(1, 1, 1, 2), 
+  b2 = c( 5, 4, 3,2), 
+  b3 = c(3, 4, 3, 4),
+  B1 = c(3, 6, 4, 4),
+  Ab = c(3, 6, 4, 4)
+  )
+
+#$++++++Selecionar somente iniciando com "B" e "b"++++++
+
+selecao = df %>%
+  select(grep("^[Bb]", names(df), value = TRUE))
+
+#$++++++Selecionar colunas com valor 3++++++
+
+selecao2 = df %>%
+  select(grep("3", names(df), value = TRUE))
+
+rm(df)
+head(selecao)
+head(selecao2)
+
+```
+
+### 4.1.2) Usando o `contains`
+
+````{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+y_1 = c("R$ 12,45", NA)
+y_2 = c("R$ 7,10", NA)
+x = c("R$ 9,45", "R$ 10,20")
+a = c(1,2)
+
+df = data.frame(
+  a,
+  x,
+  y_1,
+  y_2
+  )
+
+rm(y_1,y_2, x, a)
+
+n = c(names(df %>% select(contains("_"))), names(df %>%
+                                                   select(contains("x"))))
+
+df[,n] = lapply(df[,n],
+                function(x) as.numeric(stringr::str_replace_all(x,
+                                                                c("R\\$ " = "",
+                                                                  "," = "."))) )
+rm(n)
+
+head(df)
+
+```
+
+## 4.2) Extrair os dígitos nas observações
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+Nome.do.serviço <- c("09876oncologia", "12353cardiologia", "24537ontorrino", "97843ginecologia")
+
+df = as.data.frame(Nome.do.serviço)
+  
+df = df %>% 
+  mutate(`Código da clínica` = stringr::str_extract(Nome.do.serviço, "\\d+"))
+
+rm(Nome.do.serviço)
+
+head(df)
+
+```
+
+## 4.3) Extrair texto após números
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+x <- data.frame(
+  Var1 = c("1-gjdhwe", "2-adfjgr", "3-bkfgjdk"),
+  Var2 = c("1-gjdhwe", "2-adfjgr", "3-bkfgjdk")
+  )
+
+x = x %>% 
+  mutate(Var1 = stringr::str_replace(Var1, "(\\d+)-", ""))
+
+head(x)
+
+```
+
+## 4.4) Extrair um intervalo de caracteres
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+y = c("123456789")
+
+substr(y, start = 1, stop = 2)
+
+```
+
+## 4.5) Extrair os primeiros caracteres
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+z = strtrim(c("abcdef", "abcdef", "abcdef"), c(1, 5, 10))
+
+head(z)
+
+```
+
+## 4.6)	Extrair os últimos caracteres
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+w = c("123456789")
+w = substring(w, 4) 
+
+head(w)
+
+```
+
+## 4.7)	Extrair os caracteres de trás para frente
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+hw <- "Hadley Wickham"
+
+a = stringr::str_sub(hw, 1, 6)
+b = stringr::str_sub(hw, -1)
+
+head(a)
+head(b)
+
+```
+
+## 4.8) Extrair todos os dígitos
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+Nome.do.serviço = c("09876-oncologia/8765", "12353-cardiologia/23464",
+                    "24537-ontorrino/9073", "97843-ginecologia/35675")
+
+df = as.data.frame(Nome.do.serviço)
+
+df$numero = strex::str_extract_numbers(df$Nome.do.serviço)
+
+head(df)
+
+```
+
+## 4.9) Remover espaços em branco
+
+### 4.9.1) No início e Final
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library("stringr")
+
+Nome.do.serviço <- c(" oncologia", " cardiologia", " ontorrino", " ginecologia")
+
+str_trim(Nome.do.serviço)
+
+```
+
+### 4.9.2) Dentro da string
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library("stringr")
+
+Nome.do.serviço <- c("Will   Smith", " Cardi       B")
+
+str_squish(Nome.do.serviço)
+
+```
+
+## 4.10) Substituir string por outros
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+base <- "bnnnnnannannasplit"
+base = gsub("n{1,3}","*",base)
+
+base
+
+```
+
+### 4.10.1) Com ponto
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+base <- "b.a.a.asplit"
+base = gsub("\\.","*",base)
+
+base
+
+```
+
+### 4.10.2) Substituir múltiplos strings por outros strings
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(stringi)
+
+x = 'The quick brown fox jumped over the lazy dog.'
+
+a = stri_replace_all_fixed(x,
+     c('quick', 'brown', 'fox'), 
+     c('slow',  'black', 'bear'),
+     vectorize_all = FALSE)
+a
+
+rm(x)
+
+```
+
+## 4.11) Cases com string condicional and output
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+dft = data.frame(
+  x = sample(letters[1:8], 20, replace=TRUE)
+  )
+
+dft = dft %>%
+  mutate(
+    teste = case_when(
+      x %in% c('a','b','c') ~ "tres primeiros",
+      x %in% c('d','e','f') ~ "tres ultimos",
+      x %in% 'g' ~ "especial 1"
+    )
+  )
+
+head(dft)
+
+```
+
+# Combinar: `match`, `join` ou `merge`
+
+## 5.1) Match
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+
+x = c(11:20)
+y = as.character(LETTERS[1:10])
+d = data.frame(x, y, stringsAsFactors = F)
+
+rm(x,y)
+
+x1 = c(17,13,14,15,12)
+dd = data.frame(x1)
+
+rm(x1)
+
+dd$y = d[match(dd$x1, d$x), "y"]
+
+rm(d)
+
+head(dd)
+
+```
+
+## 5.2) join
+
+### 5.2.1) Inner_join
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data("band_members")
+data("band_instruments")
+
+band_members = band_members %>%
+  inner_join(band_instruments)
+
+head(band_members)
+
+```
+
+### 5.2.2) Right_join
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data("band_members")
+data("band_instruments")
+
+band_members = band_members %>%
+  right_join(band_instruments)
+
+head(band_members)
+
+```
+
+### 5.2.3) lefth_join
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data("band_members")
+data("band_instruments")
+
+band_members = band_members %>%
+  left_join(band_instruments)
+
+rm(band_instruments)
+
+head(band_members)
+
+```
+
+### 5.3) Merge
+
+### 5.3.1) Outer join
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df1 = data.frame(CustomerId = c(1:6), Product = c(rep("Toaster", 3),
+                                                  rep("Radio", 3)))
+df2 = data.frame(CustomerId = c(2, 4, 6), State = c(rep("Alabama", 2),
+                                                    rep("Ohio", 1)))
+
+df = merge(x = df1, y = df2, by = "CustomerId", all = TRUE)
+
+head(df)
+
+```
+
+### 5.3.2) Left outer
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df1 = data.frame(CustomerId = c(1:6), Product = c(rep("Toaster", 3),
+                                                  rep("Radio", 3)))
+df2 = data.frame(CustomerId = c(2, 4, 6), State = c(rep("Alabama", 2),
+                                                    rep("Ohio", 1)))
+
+df = merge(x = df1, y = df2, by = "CustomerId", all.x = TRUE)
+
+head(df)
+
+```
+
+### 5.3.3) Right outer
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df1 = data.frame(CustomerId = c(1:6), Product = c(rep("Toaster", 3),
+                                                  rep("Radio", 3)))
+df2 = data.frame(CustomerId = c(2, 4, 6), State = c(rep("Alabama", 2),
+                                                    rep("Ohio", 1)))
+
+df = merge(x = df1, y = df2, by = "CustomerId", all.y = TRUE)
+
+head(df)
+
+```
+
+### 5.3.4) Cross join
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df1 = data.frame(CustomerId = c(1:6), Product = c(rep("Toaster", 3),
+                                                  rep("Radio", 3)))
+df2 = data.frame(CustomerId = c(2, 4, 6), State = c(rep("Alabama", 2),
+                                                    rep("Ohio", 1)))
+
+df = merge(x = df1, y = df2, by = NULL)
+
+head(df)
+
+rm(df1, df2)
+
+```
+
+#	Identificar NA (missing)
+
+## 6.1) Nas colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+y_1 = c("R$ 12,45", NA)
+y_2 = c("R$ 7,10", NA)
+x = c("R$ 9,45", "R$ 10,20")
+a = c(1,2)
+
+df = data.frame(
+  a,
+  x,
+  y_1,
+  y_2
+  )
+
+rm(y_1,y_2, x, a)
+
+n = c(names(df %>%
+              select(contains("_"))), names(df %>%
+                                              select(contains("x"))))
+
+df = df %>%
+  mutate(
+    teste = rowSums(is.na(df[n])) 
+    )
+
+rm(n)
+
+head(df)
+
+```
+
+## 6.2) Verificar colunas com todos os valores NA
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+#$++++++Criar dataframe++++++
+
+df1 <- data.frame(replicate(5, sample(0:1, 100, rep=TRUE)))
+
+#$++++++Incluir NA exemplo++++++
+
+df1 = df1 %>%
+  mutate_at(vars(X1, X2, X3, X4, X5), 
+                  funs(ifelse(X3 == 1, NA, .)))
+
+#$++++++Identificar++++++
+
+df1$allNA = apply(df1[, c("X5","X2","X4")], 1, function(x) {all(is.na(x))})
+
+head(df1)
+
+```
+
+## 6.3) Identificar colunas que contém NA
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+a <- c(1,2,3,4,5,NA,7,8,9,10,NA,12,13,14,NA,16,17,18,19,20)
+
+cnames <- c("aa", "bb", "cc", "dd", "ee")
+
+mymatrix <- matrix(a, nrow = 4, ncol = 5, byrow = TRUE)
+
+colnames(mymatrix) <- cnames
+
+mymatrix = data.frame(mymatrix)
+
+#$++++++Colunas que possuem NA++++++
+
+colnames(mymatrix)[colSums(is.na(mymatrix)) > 0]
+
+colnames(mymatrix)[ apply(mymatrix, 2, anyNA) ]
+
+apply(is.na(mymatrix), 2, any)
+
+colnames(mymatrix)[apply(is.na(mymatrix), 2, any)]
+
+mymatrix$"contemNA" = names(which(sapply(mymatrix, anyNA)))
+
+rm(a, cnames)
+
+head(mymatrix)
+
+```
+
+## 6.4) Seleção de linhas das colunas com NA
+
+### 6.4.2) Selecionar linhas do dado com NA em *todas* as colunas começando com y
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+y_1 = c("a1", "b2", "c3", NA)
+y_2 = c("ab", "bc", "cd", NA)
+x = c("vn", "vn", "vn", "ve")
+a = c(1,2)
+
+df = data.frame(a, x, y_1, y_2)
+
+rm(y_1,y_2,x,a)
+
+test = df %>%
+  filter_at(vars(starts_with("y")), all_vars(is.na(.)))
+
+rm(df)
+
+head(test)
+
+```
+
+### 6.4.3) Selecione linhas do dado com NA em *uma* das colunas começando com y
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+y_1 = c("a1", "b2", "c3", NA)
+y_2 = c("ab", "bc", "cd", NA)
+x = c("vn", "vn", "vn", "ve")
+a = c(1,2)
+
+df = data.frame(a,x,y_1,y_2)
+
+rm(y_1, y_2, x, a)
+
+test2 = df %>%
+  filter_at(vars(starts_with("y")), any_vars(is.na(.)))
+any_vars
+
+rm(df)
+
+head(test2)
+
+```
+
+# Operações com NA (missing)
+
+## 7.1) Incluir NA com dplyr em um vetor condicional
+
+### 7.1.1) Usando `ifelse`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+df = data.frame(replicate(5, sample(1:10, 50, rep = TRUE)))
+
+df1 = df %>%
+  mutate_at(vars(X1, X2, X4, X5),
+            funs(ifelse(X3 == 1, NA, .)))
+
+rm(df)
+
+head(df1)
+
+```
+
+### 7.1.2) Usando `if_else`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+df = data.frame(replicate(5, sample(1:10, 50, rep = TRUE)))
+
+df2 = df %>%
+  mutate_at(vars(X1, X2, X4, X5),
+            funs(if_else(X3 == 1, NA_integer_, .)))
+
+df2 = df %>%
+  mutate(new = case_when(X1 == 1 ~ 5,
+                         X1 == 2 ~ NA_real_,
+                         TRUE ~ as.numeric(X1)
+                         ))
+
+rm(df)
+
+head(df2)
+
+```
+
+### 7.1.3) Usando `ifelse` e `if_else`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+#$++++++Criando banco de dados++++++
+
+library(data.table)
+library(tidyverse)
+library(dplyr)
+
+TMPP = data.table(
+  ID = c(1, 1, 1, 2, 2),
+  Date = c(1, 2, 3, 1, 2),
+  Total_neg = c(1, 1, 0, 0, 2),
+  Total_pos = c(4, 5, 2, 4, 5),
+  H1 = c(5, 4, 0, 5, -5),
+  H2 = c(5, -10, 5, 5, -5),
+  H3 = c(-10, 6, 5, 0, 10)
+)
+
+#$++++++Executando++++++
+
+TMPP = TMPP %>%
+  mutate(
+    across(starts_with("H"),
+           ~ ifelse(Total_neg == 1, NA, .))
+  )
+
+TMPP %>%
+  mutate(
+    across(starts_with("H"),
+           ~ if_else(Total_neg == 1, NA_real_, .))
+  )
+
+TMPP %>%
+  mutate(
+    across(starts_with("H"),
+           ~if_else(. >= 5, NA_real_, .))
+  )
+
+```
+
+## 7.2) Usando o pacote base
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x = c(1, 1, 2, 2)
+y1 = rnorm(4)
+y2 = rnorm(4)
+
+d = data.frame(x, y1, y2)
+
+rm(x, y1, y2)
+
+d[d$x == 1, c("y1","y2")] = c(NA, NA)
+
+head(d)
+
+```
+
+# Mudar a classe dos subconjuntos das variáveis
+
+## 8.1) Seleção das colunas pelo número da coluna
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x1 = c("3","5","6","9")
+x2 = c(1,2,3,4)
+x2 = as.character(x2)
+x3 = c(4,5,6,7)
+x3 = as.character(x3)
+x4 = c(5,6,7,8)
+x4 = as.character(x4)
+x5 = c(2,3,7,6)
+x5 = as.character(x5)
+
+df = data.frame(x1, x2, x3, x4, x5)
+
+rm(x1, x2, x3, x4, x5)
+
+cols = c(1, 3, 4, 5)
+
+#$++++++Alterar character para numeric++++++
+
+df[, cols] = apply(df[, cols], 2, function(x) as.numeric(as.character(unlist(x))))
+
+rm(cols)
+
+head(df)
+
+```
+
+## 8.2) Seleção das colunas pelo nome da coluna
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x1 = c("3","5","6","9")
+x2 = c(1,2,3,4)
+x2 = as.character(x2)
+x3 = c(4,5,6,7)
+x3 = as.character(x3)
+x4 = c(5,6,7,8)
+x4 = as.character(x4)
+x5 = c(2,3,7,6)
+x5 = as.character(x5)
+
+df = data.frame(x1, x2, x3, x4, x5)
+
+rm(x1, x2, x3, x4, x5)
+
+cols = c(1, 3, 4, 5)
+
+#$++++++Alterar character para numeric++++++
+
+cols <- c("x2")
+
+df[, cols] = lapply(cols, function(x) as.numeric(as.character(df[,x])))
+
+rm(cols)
+
+head(df)
+
+```
+
+## 8.3) Alterar várias classes dos campos do data.frame usando uma função
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df <- data.frame(x = 1:10,
+                 y = rep(1:2, 5),
+                 k = rnorm(10, 5,2),
+                 z = rep(c(2010, 2012, 2011, 2010, 1999), 2),
+                 j = c(rep(c("a", "b", "c"), 3), "d")
+                 )
+
+#$++++++Criar função++++++
+
+convert.magic <- function(obj, type){
+  FUN1 <- switch(type,
+                 character = as.character,
+                 numeric = as.numeric,
+                 factor = as.factor)
+  
+  out <- lapply(obj, FUN1)
+  as.data.frame(out)
+}
+
+#$++++++Alterando todas as colunas para character++++++
+df1 = convert.magic(df, "character")
+
+#$++++++Alterando todas as colunas para factor++++++
+df2 = convert.magic(df, "factor")
+
+#$++++++Escolhendo os nomes das colunas++++++
+df3 = df
+df3[, c("x", "y")] <- convert.magic(df3[, c("x", "y")], "numeric")
+
+rm(cols, df, convert.magic, df1, df2)
+
+head(df3)
+
+```
+
+## 8.4) Alterar todas as classes do banco de dados
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+y_1 = c("R$ 12,45", NA)
+y_2 = c("R$ 7,10", NA)
+x = c("R$ 9,45", "R$ 10,20")
+a = c(1,2)
+
+df = data.frame(a, x, y_1, y_2)
+rm(y_1, y_2, x, a)
+
+df = df %>%
+  mutate_all(as.character)
+
+head(df)
+
+```
+
+## 8.5) Mudar a classe de um vetor em data.frame acrescentando níveis
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+df <- data.frame(x = 1:10,
+                 y = rep(1:2, 5),
+                 k = rnorm(10, 5,2),
+                 z = rep(c(2010, 2012, 2011, 2010, 1999), 2),
+                 j = c(rep(c("a", "b", "c"), 3), "d")
+                 )
+
+a = as.data.frame(lapply(df, function(x) factor(x, levels = c(1,2,3),
+                                                labels = c("a","b","c")
+                                                )))
+
+head(a)
+
+```
+
+# Modificar variáveis
+
+## 9.1) Alterar nome das variáveis
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+data("mtcars")
+
+vars <- c(`Number of cylinders` = "cyl",
+          `Displacement (cu.in.)` = "disp",
+          `Gross horsepower` = "hp",
+          `Rear axle ratio` = "drat",
+          `Gross horsepower` = "hp",
+          `Rear axle ratio` = "drat",
+          `Weight` = "wt")
+
+mtcars = rename(mtcars, !!!vars)
+
+rm(vars)
+
+head(mtcars)
+
+```
+
+## 9.2) Alterar algumas variáveis selecionando um subconjunto depois alterando com uma regra
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data("mtcars")
+
+#$++++++Numero da coluna++++++
+
+col = grep("drat", names(mtcars))
+
+#$++++++Selecionar o nome da coluna++++++
+
+n1 = names(mtcars)[col]
+
+mtcars = mtcars %>%
+  mutate_at(vars( n1 ), ~ round(., 1) )
+
+rm(col, n1)
+
+head(mtcars)
+
+```
+
+## 9.3) Aplicar função em várias colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+y_1 = c("R$ 12,45", NA)
+y_2 = c("R$ 7,10", NA)
+x = c("R$ 9,45", "R$ 10,20")
+a = c(1, 2)
+
+df = data.frame(a, x, y_1, y_2)
+rm(y_1, y_2, x, a)
+
+#$++++++Seleciona as colunas++++++
+
+n = c(names(df %>%
+              select(contains("_"))), names(df %>%
+                                              select(contains("x"))))
+
+#$++++++Fazer com Grep ou outra função++++++
+
+df[,n] = lapply(df[,n], function(x)
+  as.numeric(stringr::str_replace_all(x, c("R\\$ " = "", "," = "."))) )
+
+rm(n)
+
+head(df)
+
+```
+
+## 9.4) Renomear variáveis com `dplyr`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+df <- data.frame(foo = rnorm(1000)) 
+
+df <- df %>%
+  rename(samples = foo)
+
+names(df)[names(df) == "samples"] <- "two"
+
+head(df)
+
+```
+
+## 9.5) Nome das linhas nas colunas com `janitor`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+tab_turma = data.frame(X_1 = c("Aluunos", "notas"),
+                       X_2 = c("Ariel", 2),
+                       X_3 = c("Lara", 9),
+                       X_4 = c("Joao", 6),
+                       X_5 = c("Pedro", 6))
+
+tab_turma = data.table::transpose(tab_turma) %>%
+  janitor::row_to_names(1)
+
+head(tab_turma)
+
+```
+
+## 9.6) Preencher linhas para baixo
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(tidyr)
+require(dplyr)
+
+tab_simulacao <- data.frame(
+  Date  = as.POSIXct(c("2019-12-01", "2019-12-02", "2019-12-03", "2019-12-04", "2019-12-05", "2019-12-06", NA, NA, NA, NA)),
+  Sales1 = as.numeric(c("2", NA, "7", NA, NA, "9", "12", "14", NA, NA)),
+  Sales2 = as.numeric(c(NA, "8", "9", "10", "13", NA, "17", NA, NA, "20")),
+  Sales3 = as.numeric(c(NA, NA, "3", "5", "7", "10", NA, "14", "19", "22"))
+)
+
+tab_simulacao = tab_simulacao %>%
+  fill(names(tab_simulacao))
+
+head(tab_simulacao)
+
+```
+
+
+# Remodelar os dados: um conjunto de colunas em uma única coluna de dados
+
+## 10.1) Formato wide(largo) para long(comprido) Com o tidyr
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(tidyr)
+library(reshape2)
+
+set.seed(10)
+
+messy <- data.frame(id = 1:4,
+                    trt = sample(rep(c('control', 'treatment'), each = 2)),
+                    work.T1 = runif(4),
+                    home.T1 = runif(4),
+                    work.T2 = runif(4),
+                    home.T2 = runif(4))
+messy
+
+gathered.messy <- gather(messy, key, value, -c(id, trt))
+
+head(gathered.messy)
+
+```
+
+## 10.2) Separando as variáveis chave
+
+### 10.2.1) Usando `tidyr`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(tidyr)
+library(reshape2)
+
+set.seed(10)
+
+messy <- data.frame(id = 1:4,
+                    trt = sample(rep(c('control', 'treatment'), each = 2)),
+                    work.T1 = runif(4),
+                    home.T1 = runif(4),
+                    work.T2 = runif(4),
+                    home.T2 = runif(4))
+messy
+
+gathered.messy <- gather(messy, key, value, -c(id, trt))
+
+tidy <- separate(gathered.messy,
+                 key, into = c("location", "time"),
+                 sep = "\\.", remove = F) 
+head(tidy)
+
+rm(gathered.messy, messy)
+
+```
+
+### 10.2.2) Usando `gather`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+set.seed(14)
+
+stocks <- data.frame(time = as.Date('2009-01-01') + 0:9,
+                     X = rnorm(10, 0, 1),
+                     Y = rnorm(10, 0, 2),
+                     Z = rnorm(10, 0, 4))
+
+stocksm = gather(stocks, stock, price, -time)
+
+rm(stocks)
+
+head(stocksm)
+
+```
+
+## 10.3) Voltar para o data.frame original
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(tidyr)
+
+set.seed(14)
+
+stocks <- data.frame(time = as.Date('2009-01-01') + 0:9,
+                     X = rnorm(10, 0, 1),
+                     Y = rnorm(10, 0, 2),
+                     Z = rnorm(10, 0, 4))
+
+stocksm = gather(stocks, stock, price, -time)
+
+spread.stock <- spread(stocksm, stock, price);
+head(spread.stock)
+
+rm(stocks, stocksm)
+
+```
+
+# Remodele os dados: com duas colunas ou mais
+
+## 11.1) Com duas colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(tidyr)
+
+df <- data.frame(month = rep(1:3,2),
+                 student = rep(c("Amy", "Bob"), each = 3),
+                 A = c(9, 7, 6, 8, 6, 9),
+                 B = c(6, 7, 8, 5, 6, 7))
+
+d = df %>% 
+  gather(variable, value, -(month:student)) %>%
+  unite(temp, student, variable) %>%
+  spread(temp, value)
+
+rm(df)
+
+head(d)
+
+```
+
+## 11.2) Dividir um vetor em várias colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(reshape2)
+require(tidyr)
+library(dplyr)
+
+set.seed(10)
+
+messy <- data.frame(id = 1:4,
+                    trt = sample(rep(c('control', 'treatment'), each = 2)),
+                    work.T1 = runif(4),
+                    home.T1 = runif(4),
+                    work.T2 = runif(4),
+                    home.T2 = runif(4))
+messy
+
+gathered.messy <- gather(messy, key, value, -c(id, trt))
+
+x <- c("a_1", "a_2", "b_2", "c_3")
+
+vars <- colsplit(x, "_", c("trt", "time"))
+vars
+str(vars)
+
+tidy <- separate(gathered.messy,
+                 key, into = c("location", "time"),
+                 sep = "\\.")
+
+df <- data.frame(x = c(NA, "a.b", "a.d", "b.c"))
+df = df %>%
+  separate(x, c("A", "B"))
+
+head(df)
+
+rm(gathered.messy, messy, tidy, vars, x)
+
+```
+
+# Datas
+
+## 12.1) Criar Dataset calendário
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(lubridate)
+
+ANO = c(2020:2021)
+MES = c(1:12)
+DIA = c(1:31)
+
+dCalendario = expand.grid(DIA = DIA, MES = MES, ANO = ANO)
+attr(dCalendario, "out.attrs") = NULL
+
+rm(ANO, MES, DIA)
+
+dCalendario = dCalendario %>% 
+  mutate(
+    Data = paste(DIA, MES, ANO, sep = "/"),
+    Data = as.Date(Data, "%d/%m/%Y")
+  )
+
+dCalendario = dCalendario %>%
+  filter(!is.na(Data))
+
+vardatas = function(dataset, dataname = character())
+{
+  vetordata = dataset[,dataname]
+  
+  dataset$DATA_MMYY = format(vetordata, "%m/%y")
+  dataset$dia_semana = weekdays(vetordata)
+  dataset$dia_semanaNNN = weekdays(vetordata,abbreviate = TRUE)
+  dataset$dia_semanaNNN = paste(toupper(substring(dataset$dia_semanaNNN, 1, 1)),
+                                substring(dataset$dia_semanaNNN, 2), sep = "")
+  dataset$Ndia_semana = as.POSIXlt(vetordata)$wday+1
+  dataset$Ndia_semana[dataset$Ndia_semana == 1] = 8
+  dataset$Ndia_semanaNNN = paste(dataset$Ndia_semana,dataset$dia_semanaNNN,
+                                 sep = ".")
+  
+  dataset$dia = as.numeric(format(vetordata,"%d"))
+  dataset$mes = as.numeric(format(vetordata,"%m"))
+  dataset$Nmes_MMM = months(vetordata)
+  dataset$Nmes_MMM = paste(toupper(substring(dataset$Nmes_MMM, 1, 1)),
+                           substring(dataset$Nmes_MMM, 2), sep = "")
+  dataset$Nmes_MM = months(vetordata, abbreviate = T)
+  dataset$Nmes_MM = paste(toupper(substring(dataset$Nmes_MM, 1, 1)),
+                          substring(dataset$Nmes_MM, 2), sep = "")
+  dataset$anoYY = format(vetordata, format="%Y")
+  dataset$mes_ano = paste(dataset$Nmes_MM, dataset$anoYY, sep="/" )
+  dataset$DATA_01MMYY = as.Date(format(vetordata, "%1/%m/%y"), "%d/%m/%y")
+  dataset$anomes = as.numeric(paste0(format(dataset$DATA_01MMYY, "%Y"),
+                                     format(dataset$DATA_01MMYY, "%m")))
+  dataset$ID_data = paste0(format(vetordata,"%d"), format(vetordata, "%m"),
+                           format(vetordata, "%Y"))
+  return(dataset)
+}
+
+dCalendario = vardatas(dCalendario, "Data")
+
+rm(vardatas)
+
+head(dCalendario)
+
+```
+
+## 12.2) Predefinição de formato
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(openxlsx)
+
+options(openxlsx.dateFormat = "dd/mm/YYYY")
+
+```
+
+
+## 12.3) Diferença entre datas
+
+### 12.3.1) Formato de HH:MM:SS
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+time1 <- "2019-08-25 17:18:24"
+time2 <- "2019-08-30 23:09:24"
+
+sprintf('%02d:%02d:%02d',
+        hour(time1),
+        minute(time2),
+        second(time1))
+
+```
+
+### 12.3.2) Hora
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+time1 <- "2019-08-25 17:18:24"
+time2 <- "2019-08-30 23:09:24"
+
+round(difftime(time2,time1, units = "hours"),1)
+
+```
+
+### 12.3.3) Minutos
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+time1 <- "2019-08-25 17:18:24"
+time2 <- "2019-08-30 23:09:24"
+
+ round(difftime(time2, time1, units = "mins"), 0)
+
+```
+
+### 12.3.4) Segundos
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+time1 <- "2019-08-25 17:18:24"
+time2 <- "2019-08-30 23:09:24"
+
+seconds_to_period(as.numeric(difftime(time2, time1, units = "secs")))
+
+```
+
+## 12.4) Acrescentar dia para na data
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+data("starwars")
+starwars = starwars %>%
+  select(-c(mass, height, species, skin_color, eye_color, hair_color, starships, gender, films, vehicles, birth_year, sex, mass))
+
+starwars$dias <- seq(as.Date("2020/1/1"), as.Date("2020/3/27"),  by = "days")
+starwars = starwars %>%
+  mutate(
+    data_lançamento = if_else(homeworld == "Tatooine", 1,0)
+  )
+
+#$++++++Aplicando a função++++++
+
+starwars = starwars %>%
+  mutate(
+    data_lançamento_novo = if_else(data_lançamento == 1,
+                              dias + lubridate::days(1),
+                              dias))
+
+#$++++++Formato mais simples++++++
+
+k = as.Date("01/10/2021", format = "%d/%m/%Y")
+k + lubridate::days(1)
+
+head(starwars)
+
+```
+
+## 12.5) Com datas de formato POSIXct
+
+### 12.5.1) Forma 1
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+#$++++++Criando banco de dados++++++
+
+library(dplyr)
+
+dates <- c("01/02/2014 12:40:00",
+           "01/03/2015 11:40:00",
+           "01/05/2015 05:40:00",
+           "01/04/2017 09:44:00",
+           "01/02/2019 01:43:00",
+           "01/12/2019 04:41:00")
+
+dates <- as.POSIXct(dates, format = "%m/%d/%Y %H:%M:%S")
+
+data = as.data.frame(dates)
+
+data = data %>%
+  mutate(
+    datesposterior = c(dates[-1], NA),
+  )
+
+#$++++++função para transformar em HH:MM++++++
+
+Fmt <- function(x) UseMethod("Fmt")
+Fmt.difftime <- function(x) {
+  units(x) <- "secs"
+  x <- unclass(x)
+  NextMethod()
+}
+Fmt.default <- function(x) {
+  y <- abs(x)
+  sprintf("%s%02d:%02d:%02d:%02d", 
+          ifelse(x < 0, "-", ""), # sign
+          y %/% 86400,  # days
+          y %% 86400 %/% 3600,  # hours 
+          y %% 3600 %/% 60,  # minutes
+          y %% 60 %/% 1) # seconds
+}
+
+#+++++++++++++++++++++++++++++++++++++
+
+#$++++++duração++++++
+
+data$duracao = Fmt(data$datesposterior - data$dates)
+
+rm(dates, Fmt, Fmt.difftime, Fmt.default)
+
+head(data)
+
+```
+
+### 12.5.2) Forma 2
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+#$++++++Criando banco de dados++++++
+
+library(lubridate)
+library(dplyr)
+
+dates <- c("01/02/2014 12:40:00",
+           "01/03/2014 11:40:00",
+           "01/02/2016 05:40:00",
+           "01/04/2018 09:44:00",
+           "01/07/2018 01:43:00",
+           "01/12/2019 04:41:00",
+           "12/12/2020 23:00:00",
+           "10/01/2021 10:53:38",
+           "12/11/2021 14:00:00",
+           "11/11/2022 12:17:46")
+
+dates <- as.POSIXct(dates, format = "%m/%d/%Y %H:%M:%S")
+
+DATAS = as.data.frame(dates)
+
+DATAS = DATAS %>%
+  mutate(
+    datesposterior = c(dates[-1], NA),
+  )
+
+#$++++++FUNÇÃO++++++
+
+DATAS$data = as.period(ymd_hms(DATAS$dates) %--% DATAS$datesposterior, unit = "day")
+DATAS$data = as.character(DATAS$data)
+
+rm(dates)
+
+head(DATAS)
+
+```
+
+### 12.5.3) Forma 3
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(lubridate)
+require(dplyr)
+
+time = c("08.09.2014 10:34","12.09.2014 09:33",
+         "13.08.2014 15:52","11.09.2014 02:30")
+
+ID = c("A", "A", "B", "B")
+d = data.frame(ID, time)
+
+d %>%
+  mutate(time = as.POSIXct(time, format = "%d.%m.%Y %H:%M")) %>%
+  group_by(ID) %>%
+  mutate(diff = paste0(gsub("[.].*", "", diff(time)*24), ":",
+                       round(as.numeric(gsub(".*[.]", ".", diff(time)*24))*60)))
+
+head(d)
+
+```
+
+## 12.6) De Mêses
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+#$++++++Criando banco de dados++++++
+
+library(lubridate)
+library(dplyr)
+
+dates <- c("01/02/2014",
+           "01/03/2014",
+           "01/02/2016",
+           "01/04/2018",
+           "01/07/2018",
+           "01/12/2019",
+           "12/12/2020",
+           "10/01/2021",
+           "12/11/2021",
+           "11/11/2022")
+
+dates <- as.Date(dates, format = "%m/%d/%Y")
+
+DATAS = as.data.frame(dates)
+
+DATAS = DATAS %>%
+  mutate(
+    datesposterior = c(dates[-1], NA),
+  )
+
+#$++++++FUNÇÃO++++++
+
+DATAS = DATAS %>%
+  mutate(
+    month_difference = (interval(dates, datesposterior)) %/% months(1)
+  )
+
+head(DATAS)
+
+```
+
+## 12.7) Data de atualização
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(lubridate)
+library(dplyr)
+
+Data_relatorio = as.character(Sys.time(),
+                              format = "%d/%m/%Y %H:%M:%S")
+Data_relatorio = data.frame(Data_relatorio, stringsAsFactors = F)
+
+```
+
+# Sequência de ID
+
+## 13.1) Simples
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+Df = data.frame(Nome = c("Ana", "Martha", "Carlos", "Haroldo", "Tifany", "Michael", "Lucas", "Eleanor", "Hortencia", "Gabriel"),
+                Escolaridade = c("Fundamental Completo", "Fundamental Incompleto", "Médio Completo", "Médio Incompleto", "Superior Incompleto", "Superior Completo", "Médio Completo", "Fundamental Completo", "Superior Completo", "Superior Completo"),
+                Procedencia = c("Capital", "Interior", "Interior", "Interior", "Capital", "Capital", "Capital", "Interior", "Capital", "Interior"))
+
+rm(Nome, Escolaridade, Procedencia)
+
+#$++++++Seq ID simples++++++
+
+Df$id = ave(Df$Nome, Df$Nome, FUN = seq_along)
+
+head(Df)
+
+```
+
+## 13.2) Sequência de ID
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+Df = data.frame(Nome = c("Ana", "Martha", "Carlos", "Haroldo", "Tifany", "Michael", "Lucas", "Eleanor", "Hortencia", "Gabriel"),
+                Escolaridade = c("Fundamental Completo", "Fundamental Incompleto", "Médio Completo", "Médio Incompleto", "Superior Incompleto", "Superior Completo", "Médio Completo", "Fundamental Completo", "Superior Completo", "Superior Completo"),
+                Procedencia = c("Capital", "Interior", "Interior", "Interior", "Capital", "Capital", "Capital", "Interior", "Capital", "Interior"))
+
+#$++++++Seq ID++++++
+  
+Df = Df %>%
+  mutate(
+    ID = seq(1, length(Nome), 1)
+    )
+
+head(Df)
+
+```
+
+## 13.3) De ordem e ordem inversa
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+Df = data.frame(Nome = c("Ana", "Martha", "Carlos", "Haroldo", "Tifany", "Michael", "Lucas", "Eleanor", "Hortencia", "Gabriel"),
+                Escolaridade = c("Fundamental Completo", "Fundamental Incompleto", "Médio Completo", "Médio Incompleto", "Superior Incompleto", "Superior Completo", "Médio Completo", "Fundamental Completo", "Superior Completo", "Superior Completo"),
+                Procedencia = c("Capital", "Interior", "Interior", "Interior", "Capital", "Capital", "Capital", "Interior", "Capital", "Interior"))
+
+#$++++++Seq de ordem e ordem inversa++++++
+
+Df = Df %>% 
+  group_by(Escolaridade) %>%
+  mutate(
+    ORDEM = row_number(),
+    ORDEM_INV = rev(ORDEM)) %>%
+  ungroup %>%
+  as.data.frame()
+
+head(Df)
+
+```
+
+## 13.4) Ordenada baseada na Sequência de colunas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+x = c(1, 4, 3, 5, 5)
+y = c(6, 7, 3, 3, 1)
+
+d = data.frame(x, y)
+
+d = d %>%
+  arrange(d, x, y)
+
+rm(x, y)
+
+head(d)
+
+```
+
+## 13.5) Similar à `setDT()[!`
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+x = c(1, 1, 2, 2, 2)
+y = c(3, 3, 5, 6, 6)
+df = data.frame(x,y)
+
+df = df %>% 
+  mutate( seq = ave(y, y, FUN = seq_along),
+          seq = as.numeric(seq)) 
+
+df = df %>% 
+  group_by(x, seq) %>% 
+  mutate(
+    ORDEM = row_number()
+    ) %>% 
+  ungroup %>% 
+  as.data.frame()
+
+rm(x, y)
+
+head(df)
+
+```
+
+## 13.6) Sequência de anterior e posterior
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+DT <- data.frame(A = 1:5, B = 1:5*10, C = c(1, 2, NA, 4,5) )
+
+DT %>%
+  mutate(
+    D = lag(C),
+    E = lead(C)
+    )
+
+head(DT)
+
+```
+
+## 13.7) Número máximo de repetições de um campo
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+library(dplyr)
+
+Df = data.frame(Nome = c("Ana", "Martha", "Carlos", "Haroldo", "Tifany", "Michael", "Lucas", "Eleanor", "Hortencia", "Gabriel"),
+                Escolaridade = c("Fundamental Completo", "Fundamental Incompleto", "Médio Completo", "Médio Incompleto", "Superior Incompleto", "Superior Completo", "Médio Completo", "Fundamental Completo", "Superior Completo", "Superior Completo"),
+                Procedencia = c("Capital", "Interior", "Interior", "Interior", "Capital", "Capital", "Capital", "Interior", "Capital", "Interior"))
+
+#$++++++Seq Número máximo de repetições de um campo++++++
+
+a = Df %>% 
+  group_by(Escolaridade) %>% 
+  mutate(
+    ORDEM = row_number()) %>% 
+  mutate(
+    ORDEM = max(ORDEM)) %>% 
+  ungroup %>%
+  as.data.frame()
+
+rm(Df)
+
+head(a)
+
+```
+
+## 13.8) Consumo por horsepower
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+data("mtcars")
+mtcars = mtcars %>%
+  select(-c(disp, drat, vs, am))
+
+#$++++++Seq do consumo por horsepower++++++
+
+mtcars = mtcars %>% 
+  group_by(hp, mpg) %>% 
+  mutate(
+    ORDEM = row_number()) %>% 
+  ungroup %>%
+  as.data.frame()
+
+head(mtcars)
+
+```
+
+## 13.9) Número de marchas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+data("mtcars")
+mtcars = mtcars %>%
+  select(-c(disp, hp, drat, vs, am))
+
+#$++++++Número de marchas++++++
+
+mtcars = mtcars %>% 
+  mutate(
+    ORDEM = unlist(mapply(rep,
+                          table(gear),
+                          table(gear)
+                          )))  
+
+head(mtcars)
+
+```
+
+## 13.10) Contabilizar o numero de consumo com base nas marchas
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(data.table)
+data("mtcars")
+mtcars = mtcars %>%
+  select(-c(drat, vs, am))
+
+#$+++Contabilizar o numero de consumo com base nas marchas+++
+
+mtcars = data.table::setDT(mtcars)[!is.na(hp),
+                                   SEQ_hp_gear := rleid(hp), gear]
+
+head(mtcars)
+
+```
+
+## 13.11) Baseada na quantiade da categoria
+
+```{r, eval= TRUE , echo = TRUE, collapse = FALSE, erro = FALSE}
+
+require(dplyr)
+
+Df = data.frame(Nome = c("Ana", "Martha", "Carlos", "Haroldo", "Tifany", "Michael", "Lucas", "Eleanor", "Hortencia", "Gabriel"),
+                Escolaridade = c("Fundamental Completo", "Fundamental Incompleto", "Médio Completo", "Médio Incompleto", "Superior Incompleto", "Superior Completo", "Médio Completo", "Fundamental Completo", "Superior Completo", "Superior Completo"),
+                Procedencia = c("Capital", "Interior", "Interior", "Interior", "Capital", "Capital", "Capital", "Interior", "Capital", "Interior"))
+
+#$++++++Sequência baseada na quantiade da categoria++++++
+
+Df = Df %>%
+ group_by(Procedencia) %>%
+ mutate(SEQUENCIA = cur_group_id())
+
+head(Df)
+
+```
+
+
+
+
+#
+```{r, eval= FALSE , echo = TRUE}
+
+
+
+```
+
+***
+
+# Links úteis
+
+  [*Uso do apply*](https://producaoanimalcomr.wordpress.com/2015/12/10/entendendo-o-uso-das-funcoes-apply-lapply-sapply-tapply-mappl)
+  
+  [*Estrutura de dados*](http://adv-r.had.co.nz/Data-structures.html)
+  
+  [*Combinar dois vetores ou mais*](https://stackoverflow.com/questions/16143700/pasting-two-vectors-with-combinations-of-all-vectors-elements)
+
+  [*Uso do join*](https://www.rdocumentation.org/packages/plyr/versions/1.8.4/topics/join)
+  
+  [*Uso do stri_replace*](https://rdrr.io/cran/stringi/man/stri_replace.html)
+  
+
