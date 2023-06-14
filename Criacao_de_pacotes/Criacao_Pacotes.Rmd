@@ -1,0 +1,764 @@
+---
+title: "Criação de Pacotes utilizando o Git e Github no RStudio"
+output:
+  html_document:
+    toc_depth: 3
+    css: "C:/Users/estelalopes.huwc/Desktop/Criacao_de_pacotes/morph.css"
+    includes:
+      in_header: "C:/Users/estelalopes.huwc/Desktop/Criacao_de_pacotes/style.css"
+date: "2023-04-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=FALSE, include=FALSE}
+# Adicionar o arquivo de template .css
+# C:\Users\estelalopes.huwc\AppData\Local\Programs\R\R-4.2.2\library\rmarkdown\rmd\h\bootstrap\css
+
+# Cards para inserir observações 
+
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Header 1"),
+  div(class = "card-body",
+      h4(class = "card-title", "Card title 1"),
+      p(class = "card-text", "Some quick example text to build on the card title and make up the bulk of the card's content.")
+  )
+)
+
+card2 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Header 2"),
+  div(class = "card-body",
+      h4(class = "card-title", "Card title 2"),
+      p(class = "card-text", "Some quick example text to build on the card title and make up the bulk of the card's content.")
+  )
+)
+
+card_group <- div(
+  class = "card-group",
+  card1,
+  card2
+)
+
+card_group
+
+
+# estilização do arquivo de estilo .css
+
+    <ul class="nav nav-pills justify-content-center fixed-top">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Configurações</a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="#instalacao-atualizacao">Instalação e/ou atualização</a>
+                <a class="dropdown-item" href="#pacotes">Pacotes</a>
+                <a class="dropdown-item" href="#configuracoes-sub">Configurações</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#repositorios">Repositórios</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#rstudio-git">RStudio + Git</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#criando-pacote">Criando o pacote</a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="#conceitos-basicos">Conceitos Básicos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#submissao-github">Submissão para o GitHub</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#referencias">Referências</a>
+        </li>
+    </ul>
+
+```
+
+
+
+Este manual tem o intuito de, em passo a passo, desenvolver a criação de um pacote em linguagem R e publicação dele no GitHub, impulsionando a comunidade que usa as funções para otimizar os trabalhos e auxiliando da melhor maneira aqueles que procuram aprender a criar suas próprias frinções e a aumentar o repertório em progração em R. Para a criação de um pacote e publicação no GitHub, é necessário seguir as seguintes etapas descritas abaixo:
+
+# Configurações {#configuracoes-sub .content-section}
+
+## Instalação e/ou atualização {#instalacao-atualizacao}
+
+- [R](https://cran.r-project.org/): baixe a versão mais recente.
+- [RStudio](https://www.rstudio.com/products/rstudio/download/)
+- [Git](https://git-scm.com/downloads): baixe a versão mais recente.
+
+## Pacotes {#pacotes}
+
+- usethis
+- devtools
+- [rtools](https://cran.rstudio.com/bin/windows/Rtools/): baixe a versão compatível com a versão do R.
+
+
+```{r echo=FALSE}
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Observações"),
+  div(class = "card-body",
+      h4(class = "card-title", "Pacotes"),
+      p(class = "card-text", "Verifique se os pacotes acima foram instalados e requeridos.")
+  )
+)
+
+card2 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Observações"),
+  div(class = "card-body",
+      h4(class = "card-title", "Versão"),
+      p(class = "card-text", "É possível verificar e mudar a versão do R em uso em RStudio em Tools > Global Options > R version.")
+  )
+)
+
+card_group <- div(
+  class = "card-group",
+  card1,
+  card2
+)
+
+card_group
+
+```
+
+
+
+## Configurações {#configuracoes-sub}
+
+### GitHub {#github}
+
+Crie uma conta no [GitHub](https://github.com/). Se você for estudante, pode se inscrever em [GitHub Student Developer Pack](https://education.github.com/pack) usando seu e-mail institucional.
+
+Crie um novo repositório na página inicial do seu GitHub: 
+  
+  - Clique em "New" ao lado esquerdo em "Top Repositories" e siga as instruções para criar um repositório.
+    1. Crie um nome que não inclua espaços em branco.
+    2. Crie uma descrição.
+    3. Escolha entre público ou privado.
+    4. Escolha uma licença, como a MIT (essa licença é essencial para informar às pessoas o que elas podem ou não fazer ao usar seus códigos).
+    5. Clique em "Criar repositório".
+
+Seu repositório estará pronto para receber seu projeto posteriormente.
+
+Crie um TOKEN de acesso, pois ele é usado para estabelecer conexão entre o GitHub e o R. Para isso, é necessário entrar na sua conta do GitHub.
+
+ - acessar o seu perfil > Settings > Developer settings (só precisa rolar o scroll até o final da página) > Personal access tokens (classic ou fine-grained) > Generate new token (classic ou fine-grained).
+ 
+ - A partir disso:
+    1. Nomeie o seu token
+    2. Coloque um limite para expirar (ou não, mas não é recomendável por questão de segurança. No entanto, se for algo que seja necessário ser permanente, pode-se deixar como "No expiration")
+    3. Selecione o que o seu token pode acessar
+    4. Clique em generate token e copie o token (ele expira em alguns segundos)
+    5. Cole em um bloco de notas.
+
+### Git e RStudio {#git-rstudio}
+
+É possível realizar essa etapa no Git e/ou no RStudio.
+
+Informe ao Git seu nome e e-mail. Use o mesmo e-mail associado à sua conta do GitHub.
+
+No terminal do R, é possível adicionar um terminal para o Git em vez de trabalhar separadamente no RStudio e no Git GUI/Bash. Para fazer isso:
+
+1. Abra um novo terminal em Terminal > Terminal 1 > New Terminal > Terminal Options > New Terminal Opens With... > Git Bash. É possível escolher novamente o tipo de terminal em Terminal Options > New Terminal Opens With....
+
+2. Digite o seguinte comando no console ou no script: 
+  ```
+  usethis::use_git_config(user.name = "Seu_nome", user.email = "seu_email")
+  ```
+
+3. Em seguida, digite no novo terminal: 
+  ```
+  $ git config --global user.name "Seu_nome"
+  ```
+  - e 
+  
+  ```
+  $ git config --global user.email seu_email
+  ```
+  
+```{r echo=FALSE}
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Observações"),
+  div(class = "card-body",
+      h4(class = "card-title", "Importante"),
+      p(class = "card-text", "faça essas configurações apenas uma vez por computador.")
+  )
+)
+
+card_group <- div(
+  class = "card-group",
+  card1
+)
+
+card_group
+
+```
+
+
+4. Digite git init para verificar se há um repositório local já inicializado, criando uma pasta oculta `.git` no diretório do projeto.
+
+5. Adicione a origem (URL do repositório) com o comando 
+  ```
+  git remote add origin https://github.com/seu_usuario/nome_do_repositorio.git
+  ```
+
+6. Verifique se a origem foi adicionada corretamente usando o comando `git remote -v`.
+
+
+
+# Repositórios {#repositorios .content-section}
+
+## Clonando {#clonando}
+
+```{r echo=FALSE}
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Se você já estiver trabalhando com um repositório existente, pode cloná-lo para o seu repositório local e criar um novo projeto:")
+)
+
+card_group <- div(
+  class = "card-group",
+  card1
+)
+
+card_group
+
+```
+
+
+
+### Manualmente {#clonando-manualmente}
+
+Clique em File > New Project > Version Control > Git > Clone Git Repository.
+
+Insira as seguintes informações:
+
+1. Repository URL: Cole o link para o repositório.
+
+2. Project directory name: O campo será preenchido automaticamente após inserir o Repository URL.
+
+3. Create project as subdirectory of: Selecione o diretório onde você deseja manter sua cópia local do repositório.
+
+O RStudio irá clonar o repositório e abrirá um RProj para ele (caso ainda não exista um).
+
+### Por código {#clonando-por-codigo}
+
+A partir de um diretório existente, é possível fazer um fork e clonar diretamente pelo RStudio. Para isso, use a função:
+
+
+```
+usethis::create_from_github(
+  repo_spec = "usuário_github/nome_do_repositório",
+  destdir = "caminho/para/uma/pasta/local",
+  fork = TRUE
+)
+```
+
+Argumentos importantes:
+
+-  repo_spec: especifica o repositório em que deseja trabalhar, no formato "usuário_github/nome_do_repositório".
+
+- destdir: especifica o diretório em que deseja salvar os arquivos.
+fork: se for igual a TRUE, fará um fork do repositório. Isso só funcionará se o token do GitHub estiver configurado corretamente.
+
+- Antes de fazer qualquer modificação, crie uma nova branch usando a função `usethis::pr_init()`.
+
+Argumento importante:
+
+- branch: indica o nome da branch que deseja criar.
+- Por exemplo: `usethis::pr_init(branch = "teste")`.
+
+Faça suas contribuições e sempre faça commits com mensagens que deixem claro as mudanças. Quando terminar as contribuições necessárias, use a função `usethis::pr_push()` para criar um Pull Request. Se for aceito, será mesclado ao projeto original.
+
+Por fim, volte para a branch master, atualize (pull) o conteúdo e exclua a branch criada com o comando `pr_finish()`.
+
+## Criando {#criando}
+
+Antes de criar um novo projeto, é necessário criar um repositório com o mesmo nome do projeto no GitHub. Caso já tenha criado, siga as instruções abaixo para criar um projeto manualmente ou por código.
+
+### Manualmente {#criando-manualmente}
+
+Clique em File > New Project... > New Directory > R Package.
+
+1. Adicione o nome do projeto (igual ao do repositório criado no GitHub) e o diretório local em que o projeto se encontrará.
+
+2. Marque a caixa de seleção "Create a git repository".
+
+### Por código {#criando-por-codigo}
+
+Para criar rapidamente um escopo para o pacote, rode o comando:
+
+```
+usethis::create_package("caminho/para/uma/pasta/nome_do_pacote").
+```
+
+Outra opção é usar as funções:
+
+```
+usethis::setwd("caminho/para/uma/pasta/")
+usethis::create_project("pasta/nome_do_pacote")
+```
+
+Ajustes sugeridos:
+
+Argumento importante:
+
+- path é o caminho para o diretório (pasta). Se o diretório já existe, ele será utilizado. Se não existir, ele será criado.
+
+Agora, é necessário inicializar o Git:
+
+```
+usethis::use_git()
+```
+
+Selecione os itens que sugerirem afirmação:
+
+```
+usethis::use_github()
+```
+
+Selecione a opção HTTPS e depois o item que sugerir afirmação.
+
+Crie um arquivo `README.md` com o comando `usethis::use_readme_md()`. Este arquivo será usado como apresentação das suas funções, para que servem e exemplos de uso delas.
+
+
+
+# RStudio + Git {#rstudio-git .content-section}
+
+Abra o arquivo `.Renviron`:
+
+```
+usethis::edit_r_environ()
+```
+
+Crie uma nova linha na forma `GITHUB_PAT=SEU_TOKEN`, adicione o token e salve o arquivo.
+
+Reinicie o RStudio: CTRL + SHIFT + F10
+
+
+
+# Criando o pacote {#criando-pacote .content-section}
+
+## Pacotes principais para criar um pacote R {#pacotes-principais}
+
+```
+library(usethis)
+library(devtools)
+library(rlang)
+```
+
+## Criando funções {#criando-funcoes}
+
+Para criar uma função é simples, apenas rode a função `use_r("Nome_da_Função")`.
+
+Isso abrirá um novo script, e nele você irá escrever as suas funções no estilo de escrita conhecido como documentação de função usando `roxygen2`. Ele é usado para documentar funções em pacotes do R e segue uma estrutura específica para facilitar a leitura e compreensão do que a função faz, quais são os parâmetros esperados, o que ela retorna e se ela deve ser exportada para o `NAMESPACE` do pacote. Ela é escrita da seguinte maneira:
+
+```
+#' Resumidamente em uma frase, o que a função faz
+#'
+#' Explicação um pouco melhor de como essa função funciona.
+#'
+#' @param Parâmetro_1 Explicação do Parâmetro e um exemplo.
+#' @param Parâmetro_2 Explicação do Parâmetro e um exemplo.
+#' @param Parâmetro_3 Explicação do Parâmetro e um exemplo.
+#' @param Parâmetro_4 Explicação do Parâmetro e um exemplo.
+#' 
+#' @return Explicação de o que essa função retorna.
+#' @export Indica para exportar a função para o NAMESPACE.
+#'
+Nome_da_Função <- function(Parâmetro_1, Parâmetro_2, Parâmetro_3, Parâmetro_4) {
+Script com as etapas para o funcionamento da função
+return(O que a função vai retornar (Ex: uma lista, um banco de dados, etc.))
+}
+```
+
+Cada uma das funções será armazenada em um script `.R` dentro da pasta `R` do projeto criado.
+
+### Checagem das funções {#checagem-funcoes}
+
+Após criar as funções, é importante checar e testar todas elas. Dentro da aba "Build", encontram-se as ferramentas para realizar automaticamente essas tarefas. São elas: "Install", "Test" e "Check". Elas são essenciais para encontrar possíveis erros que possam prejudicar o funcionamento das funções.
+
+Install:
+
+```
+Rcmd.exe INSTALL --preclean --no-multiarch --with-keep.source Nome_do_Pacote
+
+* installing to library 'Caminho/até/AppData/Local/Programs/R/R-4.2.3/library'
+* installing *source* package 'Nome_do_Pacote' ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (Nome_do_Pacote)
+```
+
+Test:
+
+```
+ℹ Testing Nome_do_Pacote
+✔ | F W S  OK | Context
+
+Aqui ficarão os nomes das funções criadas
+
+══ Results ════════════════════════════════════════════════
+Duration: 0.1 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+```
+
+Check:
+
+```
+── R CMD check results ──── Nome_do_Pacote 0.0.0.9000 ────
+Duration: 20.2s
+
+❯ checking for future file timestamps ... NOTE
+  unable to verify current time
+
+0 errors ✔ | 0 warnings ✔ | 1 note ✖
+    
+R CMD check succeeded
+```
+
+
+
+# Conceitos Básicos {#conceitos-basicos .content-section}
+
+
+```{r echo=FALSE}
+library(htmltools)
+
+accordionItems <- list(
+  list(
+    header = "Branches",
+    body = list(
+      list(
+        title = "Master",
+        content = "é o nome padrão da branch principal no Git e no GitHub. É a branch que contém a versão estável e pronta para produção do código fonte de um projeto. Todas as alterações e desenvolvimentos são normalmente realizados em branches separadas e depois mesclados à branch master por meio de uma solicitação de pull ou merge.
+        "
+      ),
+      list(
+        title = "Branch",
+        content = "é uma funcionalidade do Git e do GitHub que permite criar uma linha de desenvolvimento separada do código principal. Um branch é como uma ramificação do projeto principal, permitindo que os desenvolvedores trabalhem em novos recursos ou correções sem interferir no código principal. As alterações feitas em um branch podem ser mescladas de volta ao projeto principal por meio de um merge."
+      )
+    )
+  ),
+  list(
+    header = "Push, Pull, Fork",
+    body = list(
+      list(
+        title = "Push",
+        content = "é uma operação do Git e do GitHub que permite enviar as alterações realizadas em um repositório local para um repositório remoto. Ao fazer um push, as alterações são enviadas para o servidor e se tornam visíveis para outros colaboradores do projeto. O push é usado para manter a versão mais recente do código em um repositório remoto e garantir que todos os colaboradores tenham acesso às mesmas alterações.
+        "
+      ),
+      list(
+        title = "Pull",
+        content = "é uma operação no Git e GitHub que permite atualizar um repositório local com as alterações feitas em um repositório remoto. O pull é usado para sincronizar as alterações realizadas por outros usuários em um repositório compartilhado. Ao realizar um pull, o Git baixa as alterações do repositório remoto e as mescla com o repositório local.
+        "
+      ),
+      list(
+        title = "Fork",
+        content = "é uma funcionalidade do Git e do GitHub que permite criar uma cópia de um repositório de código existente. O fork permite que um usuário crie sua própria versão do repositório original, sem alterar o código original. Essa cópia pode ser modificada pelo usuário que realizou o fork, e as alterações podem ser enviadas de volta ao repositório original por meio de uma solicitação de pull.
+        "
+      )
+    )
+  ),
+  list(
+    header = "Commit, Pull Request",
+    body = list(
+      list(
+        title = "Commit",
+        content = "é uma ação no Git e GitHub que registra alterações em um repositório de código. Ele é usado para salvar alterações locais no repositório. Cada commit tem um identificador exclusivo que permite rastrear e reverter as mudanças realizadas. Os commits são essenciais para o controle de versão e colaboração em projetos de software.
+        "
+      ),
+      list(
+        title = "Pull Request",
+        content = "é uma funcionalidade do Git e do GitHub que permite que um colaborador proponha alterações em um repositório de código existente. O colaborador cria uma cópia do repositório original, faz as alterações desejadas e envia uma solicitação de pull request para o proprietário do repositório original. O proprietário do repositório pode revisar as alterações propostas e decidir se as incorpora ao repositório original."
+      )
+    )
+  )
+)
+
+accordionItemsHtml <- lapply(seq_along(accordionItems), function(i) {
+  item <- accordionItems[[i]]
+  itemHeader <- tags$h2(class = "accordion-header",
+                        id = paste0("heading", i),
+                        tags$button(class = "accordion-button collapsed",
+                                    type = "button",
+                                    `data-bs-toggle` = "collapse",
+                                    `data-bs-target` = paste0("#collapse", i),
+                                    `aria-expanded` = "false",
+                                    `aria-controls` = paste0("collapse", i),
+                                    tags$span(style="font-size: 20px;", item$header)))
+  itemBody <- tags$div(class = "accordion-collapse collapse",
+                       id = paste0("collapse", i),
+                       `aria-labelledby` = paste0("heading", i),
+                       `data-bs-parent` = "#accordionExample",
+                       tags$div(class = "accordion-body",
+                                lapply(seq_along(item$body), function(j) {
+                                  subitem <- item$body[[j]]
+                                  tags$div(tags$strong(subitem$title),
+                                           subitem$content)
+                                })))
+  tags$div(class = "accordion-item", itemHeader, itemBody)
+})
+
+accordionHtml <- tags$div(class = "accordion", id = "accordionExample", accordionItemsHtml)
+accordionHtml
+
+```
+
+
+
+# Submissão para o GitHub {#submissao-github .content-section}
+
+## Submissão manual {#submissao-manual}
+
+O RStudio oferece um cliente Git simples, na aba "Git" (em inglês, é chamado de Git Pane). Esse painel somente aparecerá em projetos que estejam versionados com Git. Nele estão presentes as ferramentas Diff, Commit, Pull, Push, History, More, New Branch e Master (o padrão é estar em Master, mas ao clicar nele, mostra-se a localização atual e os locais de Branch em que se pode navegar). Elas servem para realizar todas as tarefas necessárias para a revisão, atualização, importação e exportação do pacote para o GitHub.
+
+Abaixo delas, há os ícones que informam o Staged (estágio), o Status (estatus) e o Path (caminho do arquivo).
+
+
+```{r echo=FALSE}
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Observações"),
+  div(class = "card-body",
+      h4(class = "card-title", "Importante"),
+      p(class = "card-text", "O que for feito no arquivo será automaticamente reconhecido nos Status, mesmo se for escolhido ignorar o arquivo.")
+  )
+)
+
+
+card_group <- div(
+  class = "card-group",
+  card1
+)
+
+card_group
+
+```
+
+
+### Diff {#diff}
+
+Ele serve para Revisar as modificações realizadas nos arquivos em que foram trabalhados.
+
+### 🕗 History {#history}
+
+Ele serve para apresentar em ordem cronológica quais foram as alterações realizadas em todos os arquivos em que foram trabalhados.
+
+### ⚙️ More {#more}
+
+Este botão possui mais três ferramentas: Revert... (Serve para reverter alterações feitas em arquivos selecionados no estágio), 🚫 Ignore... (Serve para ignorar arquivos e/ou pastas selecionadas no estágio) e New Terminal (Cria um novo terminal para trabalhar).
+
+### New Branch {#new-branch}
+
+Cria um novo branch.
+
+### Master {#master-sub}
+
+Verifica em qual branch está trabalhando e quais são as branches existentes.
+
+### Staged {#staged}
+
+São os arquivos selecionados para que sejam considerados na realização de um commit.
+
+### Status {#status}
+
+Indica as alterações feitas nos arquivos que estão sendo trabalhados. As seguintes letras são utilizadas para indicar o tipo de modificação:
+
+- A: Adicionado
+- D: Deletado
+- M: Modificado
+- R: Renomeado
+- ?: Não rastreado
+
+### Path {#path}
+
+Informa o arquivo e o caminho do arquivo, caso esteja dentro de uma pasta dentro do projeto.
+
+### Commit {#commit-sub}
+
+Para finalmente exportar o projeto/pacote para o GitHub, é essencial efetuar um commit. Ao clicar no botão Commit, será aberto um painel com as ferramentas necessárias para visualizar os arquivos, o histórico de mudanças feitas no arquivo selecionado (As linhas que estiverem em verde são novas linhas, e as que estiverem em vermelho são linhas que foram alteradas ou excluídas), um local para inserir uma mensagem útil para entender o que este commit irá fazer, e o Pull e Push.
+
+Para realizar o Commit, selecione os arquivos que serão enviados ao GitHub, escreva a mensagem do commit e clique no botão Commit. Será aberta uma aba com o diretório informando a execução do commit pelo executável do git, a mensagem do commit e as informações gerais de quantas modificações, inserções e deleções.
+
+Por código:
+
+```
+use_git()
+use_github()
+```
+
+O arquivo README é a página inicial do pacote no GitHub:
+
+```
+use_readme_rmd()
+build_readme()
+Divulgação das alterações
+```
+
+Para divulgar as alterações feitas, use o comando:
+
+```
+use_news_md()
+```
+
+Atualização da versão do pacote:
+
+A numeração e a atualização da versão se encontram no arquivo `"description"`.
+
+```
+use_version()
+```
+
+- major –> 1.0.0 - incrementa o primeiro número
+- minor –> 0.1.0 - incrementa o segundo número
+- patch –> 0.0.1 - incrementa o terceiro número
+- dev –> 0.0.0.9001 - incrementa o quarto número (se houver)
+
+Adição de arquivos externos para serem utilizados no pacote:
+
+```
+# Criar a pasta "inst" (se ainda não existir)
+if (!file.exists("inst")) {
+  dir.create("inst")
+}
+
+# Criar a pasta "Arquivos_externos" dentro de "inst" (se ainda não existir)
+if (!file.exists("inst/Arquivos_externos")) {
+  dir.create("inst/Arquivos_externos")
+}
+
+# Copiar ou mover arquivos para a pasta "Arquivos_externos"
+file.copy(from = "caminho/do/arquivo.txt", to = "inst/Arquivos_externos")
+file.copy(from = "caminho/do/outro_arquivo.txt", to = "inst/Arquivos_externos")
+
+```
+
+## Instalação do pacote {#instalacao-pacote}
+
+```
+install.packages("remotes")
+remotes::install_github("usuário/nome_do_pacote")
+```
+
+
+## Teste do pacote {#teste-pacote}
+
+Agora é só realizar o teste manualmente das funções.
+
+```
+library(nome_do_pacote)
+nome_da_função()
+```
+
+Para utilizar os arquivos disponíveis na pasta de arquivos externos:
+
+```
+# Adiciona a pasta de arquivos externos
+  caminho_pasta <- system.file("Arquivos_externos", package = "nome_do_pacote")
+  
+  # Obtém a lista de arquivos na pasta
+  arquivos <- list.files(caminho_pasta)
+  
+  # Criar uma lista para armazenar os dados dos arquivos XLSX
+  dados_xlsx <- list()
+  
+  # Itera sobre cada arquivo e realiza a leitura dos arquivos .xlsx
+  for (arquivo in arquivos) {
+    caminho_arquivo <- file.path(caminho_pasta, arquivo)
+    
+    # Verifica se o arquivo possui a extensão desejada (exemplo .xlsx) e não começa com ~$
+    if (grepl("\\.xlsx$", arquivo, ignore.case = TRUE)) {
+      # Realiza a leitura do arquivo usando read_excel
+      dados_xlsx[[arquivo]] <- readxl::read_excel(caminho_arquivo)
+    }
+  }
+  
+  # Se for utilizar join ou merge, dependendo do tamanho do arquivo, não é recomendado, pois utiliza mais do que o disponível de memória do R
+  df = dados_xlsx$df.xlsx
+  df1 = dados_xlsx$df1.xlsx
+  df2 = dados_xlsx$df2.xlsx
+  df3 = dados_xlsx$df3.xlsx
+  rm(dados_xlsx)
+```
+
+```{r echo=FALSE}
+library(htmltools)
+
+card1 <- div(
+  class = "card text-white bg-warning mb-3",
+  div(class = "card-header", "Observações"),
+  div(class = "card-body",
+      h4(class = "card-title", "Importante"),
+      p(class = "card-text", "Este código pode ser implementado dentro das funções que forem criadas.")
+  )
+)
+
+card_group <- div(
+  class = "card-group",
+  card1
+)
+
+card_group
+
+```
+
+
+
+# Informações sobre possíveis erros {#erros .content-section}
+
+- Caso o RStudio não consiga encontrar o executável do Git ao tentar criar o projeto, siga os seguintes passos:
+
+  1. Acesse o Global Options do RStudio: Tools > Global Options... > Git/SVN.
+  2. Ative o Enable version control interface for RStudio projects.
+  3. No campo Git executable, clique no botão Browse... e procure pelo arquivo executável do Git git.exe no caminho Caminho/até/AppData/Local/Programs/Git/bin/git.exe.
+
+- Caso as funções criadas não sejam adicionadas automaticamente ao `NAMESPACE` do pacote, elas podem ser incluídas manualmente ou por código. Para incluir manualmente, siga estes passos:
+
+  1. Acesse o repositório do pacote criado no GitHub.
+  2. Acesse o arquivo NAMESPACE e adicione a função export(Nome_da_Função) na última linha.
+  3. Salve o arquivo e exclua o pacote instalado no RStudio.
+  4. Refaça a instalação do pacote.
+
+- Caso ocorra o erro "Using github PAT from envvar GITHUB_PAT..." ou o aviso "Warning: package ‘Nome_do_Pacote’ is in use and will not be installed", use o seguinte código no console do RStudio:
+  ```
+  options(download.file.method = "wininet")
+  ```
+  * ou
+  ```
+  options(download.file.method = "libcurl")
+```
+
+
+# Referências {#referencias .content-section}
+
+- [Writing R Extensions]("https://cran.r-project.org/doc/manuals/R-exts.html")
+- [R Packages]("https://r-pkgs.org/index.html")
+- [devtools]("https://devtools.r-lib.org/")
+- [GitHub]("https://github.com/")
+- [Primeiros passos utilizando o Git e GitHub no RStudio]("https://beatrizmilz.github.io/RLadies-Git-RStudio-2019/#1")

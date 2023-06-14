@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css"
+        integrity="sha512-NM/1Q8AVFkzX9bQZm00uZPmBJdPBOuVcgfHt1KcV7TH8pPjKz+D/jkT48TThTxfYcAKwTqlMV+MfmnJyWPh34w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        .dropdown-item {
+            font-size: 15px;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            z-index: 9999;
+            justify-content: center;
+        }
+        
+        /* Oculta todas as seções, exceto a primeira */
+        .content-section {
+            display: none;
+        }
+      
+        /* Exibe a seção ativa */
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <ul class="nav nav-pills justify-content-center fixed-top">
+    <li class="nav-item">
+        <a class="nav-link" href="#configuracoes-sub">Configurações</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#repositorios">Repositórios</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#rstudio-git">RStudio + Git</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#criando-pacote">Criando o pacote</a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="#conceitos-basicos">Conceitos Básicos</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#submissao-github">Submissão para o GitHub</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#erros">Informações sobre possíveis erros</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#referencias">Referências</a>
+    </li>
+</ul>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-ayO3En3QqE7ATaHq+KfLdrLWJ6naPDBK3T79y/1s1gTmYDjKb55hq/A2Qy0NvPckXE6fsSQpqj7t2aKt6Z7a0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js" integrity="sha512-FAKZr9q3fI8rkUhLjJjKsnjf2sGx6W8ks2z1GJnZdxX9ZD6W8L6nPXmFm70J6gIlK8mdgW/LhYdUrZIcav3XrQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Manipula o clique nos links do navbar
+            $('.nav-link').click(function(event) {
+                event.preventDefault();
+
+                // Obtém o identificador da seção a ser ativada
+                var target = $(this).attr('href');
+
+                // Remove a classe 'active' de todas as seções
+                $('.content-section').removeClass('active');
+
+                // Adiciona a classe 'active' à seção de destino
+                $(target).addClass('active');
+            });
+
+            // Manipula o clique nos links do dropdown
+            $('.dropdown-item').click(function(event) {
+                // Verifica se o link pertence ao dropdown
+                if ($(this).closest('.dropdown-menu').length) {
+                    event.preventDefault();
+
+                    // Obtém o identificador do conteúdo do dropdown a ser exibido
+                    var target = $(this).attr('href');
+
+                    // Oculta todos os conteúdos dos dropdowns
+                    $('.content-section').hide();
+
+                    // Exibe o conteúdo do dropdown de destino
+                    $(target).show();
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
