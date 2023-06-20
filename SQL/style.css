@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Documentação SQL no RStudio</title>
+  <link rel="stylesheet" href="https://bootswatch.com/5/solar/bootstrap.min.css">
+  <style>
+    .navbar {
+      margin-bottom: 20px;
+    }
+        /* Custom styles */
+    #funcoes-nav ul.nav {
+      display: flex;
+      justify-content: space-between;
+    }
+    #funcoes-nav ul.nav li {
+      margin-right: 10px;
+    }
+    #funcoes-nav .dropdown-menu {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="#">Documentação SQL no RStudio</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#introducao">Introdução</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#dbbsql">Diferenças dos bancos de dados no SQL</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#funcoes">Funções</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 id="introducao">Introdução</h2>
+    <p>Bem-vindo à documentação sobre o uso das funções do SQL no ambiente do RStudio! Neste guia abrangente, exploraremos a
+      poderosa combinação entre a linguagem de consulta SQL e o ambiente de desenvolvimento integrado (IDE) do RStudio.</p>
+    <p>O SQL (Structured Query Language) é uma linguagem de programação amplamente utilizada para gerenciar e manipular dados armazenados em bancos de dados relacionais. Por outro lado, o RStudio é um ambiente popular para análise de dados e programação em R, oferecendo recursos avançados para a manipulação, visualização e modelagem de dados.</p>
+    
+    <p>A integração do SQL no RStudio oferece uma série de vantagens, permitindo aos usuários acessar, consultar e manipular dados de bancos de dados diretamente em seus scripts R. Com a utilização das funções SQL no RStudio, os profissionais de dados podem aproveitar o poder do SQL para realizar operações complexas, como filtrar, ordenar, agrupar e unir dados, de forma eficiente e intuitiva.</p>
+    
+    <p>Nesta documentação, forneceremos uma visão geral das principais funções SQL disponíveis no RStudio, demonstrando seu uso em exemplos práticos. Abordaremos tópicos fundamentais, como estabelecer conexões com bancos de dados, executar consultas SQL, lidar com parâmetros dinâmicos, otimizar consultas e gerenciar transações.</p>
+    
+    <p>Ao final desta documentação, você terá adquirido conhecimentos valiosos sobre como aproveitar as funcionalidades do SQL no RStudio para transformar e analisar dados de maneira eficaz. Este guia servirá como uma referência essencial para profissionais que desejam expandir suas habilidades em análise de dados usando a combinação poderosa do SQL e do RStudio.</p>
+    <p>Agora, vamos mergulhar no mundo das funções SQL no RStudio e desvendar todo o potencial que essa integração oferece. Prepare-se para uma jornada emocionante em direção ao domínio das consultas SQL e à exploração dos dados por meio do RStudio!</p>
+
+    <h2 id="dbbsql">Diferenças dos bancos de dados no SQL</h2>
+<p>Existem diferentes tipos de bancos de dados disponíveis, cada um com suas próprias características e finalidades específicas. Vou destacar algumas das principais diferenças entre os tipos de bancos de dados mais comuns, incluindo uma comparação com o MongoDB:</p>
+
+      <ol>
+        <li>
+          <strong>Bancos de Dados Relacionais (SQL):</strong>
+          <ul>
+            <li>Estrutura: Utilizam esquemas predefinidos, com tabelas, colunas e relações estabelecidas entre elas.</li>
+            <li>Consistência: Mantêm a integridade dos dados por meio de restrições e regras.</li>
+            <li>Consultas: Utilizam a linguagem SQL para consultas e manipulação de dados.</li>
+            <li>Escalabilidade: Possuem uma escalabilidade vertical (adicionando recursos ao servidor) e horizontal (distribuindo os dados em vários servidores).</li>
+            <li>Exemplo: MySQL, PostgreSQL, Oracle.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Bancos de Dados NoSQL:</strong>
+          <ul>
+            <li>Estrutura: Não utilizam esquemas predefinidos, permitindo flexibilidade na estrutura dos dados.</li>
+            <li>Modelos de Dados: Podem ser baseados em documentos, grafos, chave-valor ou famílias de colunas.</li>
+            <li>Escalabilidade: Possuem uma alta escalabilidade horizontal, distribuindo os dados em vários nós.</li>
+            <li>Consultas: Podem utilizar diferentes modelos de consulta, como consultas baseadas em documentos (MongoDB), consultas de grafos (Neo4j) ou consultas de chave-valor (Redis).</li>
+            <li>Exemplo: MongoDB, Cassandra, Redis.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Bancos de Dados em Memória:</strong>
+          <ul>
+            <li>Armazenamento: Mantêm os dados em memória principal (RAM) para acesso rápido.</li>
+            <li>Desempenho: Oferecem alta velocidade de leitura/gravação devido à ausência de operações de I/O em disco.</li>
+            <li>Escalabilidade: Podem ser escalados verticalmente com a adição de mais memória.</li>
+            <li>Exemplo: Redis, Memcached.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Bancos de Dados de Grafos:</strong>
+          <ul>
+            <li>Estrutura: Armazenam dados em nós e relacionamentos, permitindo consultas complexas de relacionamentos.</li>
+            <li>Consultas: Utilizam uma linguagem específica para consultas de grafos, como Cypher (Neo4j).</li>
+            <li>Modelagem: São adequados para dados altamente interconectados, como redes sociais ou análises de relacionamentos.</li>
+            <li>Exemplo: Neo4j, OrientDB.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Bancos de Dados de Séries Temporais:</strong>
+          <ul>
+            <li>Estrutura: Especializados em armazenar e consultar dados com marcação de tempo.</li>
+            <li>Otimização: Possuem otimizações específicas para consultas de séries temporais, como agregações por janela de tempo.</li>
+            <li>Exemplo: InfluxDB, TimescaleDB.</li>
+          </ul>
+        </li>
+      </ol>
+
+    <h2 id="funcoes">Funções</h2>
+    <p>Aqui você encontrará informações sobre as principais funções SQL disponíveis no RStudio.</p>
+  </div>
+
+<div class="container">
+  <ul id="funcoes-nav" class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="#funcoes-agregadas" data-toggle="tab">Funções Agregadas</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-janela" data-toggle="tab">Funções de Janela</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-bitwise" data-toggle="tab">Funções Bitwise</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-pivotamento" data-toggle="tab">Funções de Pivotamento</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-matematicas" data-toggle="tab">Funções Matemáticas</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-manipulacao-strings" data-toggle="tab">Funções de Manipulação de Strings</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-data-hora" data-toggle="tab">Funções de Data e Hora</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-numericas" data-toggle="tab">Funções Numéricas</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-conversao-dados" data-toggle="tab">Funções de Conversão de Dados</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#funcoes-formatacao" data-toggle="tab">Funções de Formatação</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div id="funcoes-agregadas" class="tab-pane fade show active">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#count" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="count">COUNT()</a>
+            </h5>
+          </div>
+          <div id="count" class="collapse">
+            <div class="card-body">
+              Returns the number of rows in a table.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT COUNT(*) FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the COUNT() function to count the number of rows in the employees table.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#sum" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="sum">SUM()</a>
+            </h5>
+          </div>
+          <div id="sum" class="collapse">
+            <div class="card-body">
+              Returns the sum of a numeric column.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT SUM(salary) FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the SUM() function to calculate the total salary of all employees.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#avg" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="avg">AVG()</a>
+            </h5>
+          </div>
+          <div id="avg" class="collapse">
+            <div class="card-body">
+              Returns the average value of a numeric column.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT AVG(salary) FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the AVG() function to calculate the average salary of all employees.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#min" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="min">MIN()</a>
+            </h5>
+          </div>
+          <div id="min" class="collapse">
+            <div class="card-body">
+              Returns the smallest value of a column.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT MIN(salary) FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the MIN() function to find the lowest salary among all employees.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#max" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="max">MAX()</a>
+            </h5>
+          </div>
+          <div id="max" class="collapse">
+            <div class="card-body">
+              Returns the largest value of a column.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT MAX(salary) FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the MAX() function to find the highest salary among all employees.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-janela" class="tab-pane fade">
+      <div class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#row_number" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="row_number">ROW_NUMBER()</a>
+            </h5>
+          </div>
+          <div id="row_number" class="collapse">
+            <div class="card-body">
+              Returns the number of a row within a result set.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS 'row_number'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the ROW_NUMBER() function to assign a number to each row based on the employees' salary in descending order.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#rank" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="rank">RANK()</a>
+            </h5>
+          </div>
+          <div id="rank" class="collapse">
+            <div class="card-body">
+              Returns the rank of each row within a result set.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS 'rank'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the RANK() function to rank employees by their salary in descending order.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#dense_rank" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="dense_rank">DENSE_RANK()</a>
+            </h5>
+          </div>
+          <div id="dense_rank" class="collapse">
+            <div class="card-body">
+              Returns the rank of each row within a result set, with no gaps in ranking values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS 'dense_rank'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the DENSE_RANK() function to rank employees by their salary in descending order, with no gaps in ranking values.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#ntile" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="ntile">NTILE(n)</a>
+            </h5>
+          </div>
+          <div id="ntile" class="collapse">
+            <div class="card-body">
+              Distributes the rows in an ordered partition into a specified number of groups.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, NTILE(4) OVER (ORDER BY salary DESC) AS 'quartile'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the NTILE() function to divide employees into four quartiles based on their salary.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#lag" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="lag">LAG()</a>
+            </h5>
+          </div>
+          <div id="lag" class="collapse">
+            <div class="card-body">
+              Accesses data from a previous row in the same result set.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, LAG(salary) OVER (ORDER BY salary) AS 'previous_salary'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the LAG() function to access the previous employee's salary in the list ordered by salary.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#lead" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="lead">LEAD()</a>
+            </h5>
+          </div>
+          <div id="lead" class="collapse">
+            <div class="card-body">
+              Accesses data from a subsequent row in the same result set.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, LEAD(salary) OVER (ORDER BY salary) AS 'next_salary'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the LEAD() function to access the next employee's salary in the list ordered by salary.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#first_value" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="first_value">FIRST_VALUE()</a>
+            </h5>
+          </div>
+          <div id="first_value" class="collapse">
+            <div class="card-body">
+              Returns the first value in an ordered set of values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary, FIRST_VALUE(name) OVER (ORDER BY salary DESC) AS 'highest_salary'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the FIRST_VALUE() function to return the name of the employee with the highest salary.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#last_value" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="last_value">LAST_VALUE()</a>
+            </h5>
+          </div>
+          <div id="last_value" class="collapse">
+            <div class="card-body">
+              Returns the last value in an ordered set of values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, salary,
+               LAST_VALUE(name) OVER (ORDER BY salary DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS 'lowest_salary'
+               FROM employees;</code>
+                </pre>
+              </code>
+              This example uses the LAST_VALUE() function to return the name of the employee with the lowest salary.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#cume_dist" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="cume_dist">CUME_DIST()</a>
+            </h5>
+          </div>
+          <div id="cume_dist" class="collapse">
+            <div class="card-body">
+              Calculates the cumulative distribution of a value within a group of values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, score,
+               CUME_DIST() OVER (ORDER BY score DESC) AS 'cumulative_distribution'
+               FROM test_scores;</code>
+                </pre>
+              </code>
+              This example uses the CUME_DIST() function to calculate the cumulative distribution of test scores.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#percent_rank" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="percent_rank">PERCENT_RANK()</a>
+            </h5>
+          </div>
+          <div id="percent_rank" class="collapse">
+            <div class="card-body">
+              Calculates the relative rank of a row within a group of rows.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT name, score,
+               PERCENT_RANK() OVER (ORDER BY score DESC) AS 'percent_rank'
+               FROM test_scores;</code>
+                </pre>
+              </code>
+              This example uses the PERCENT_RANK() function to calculate the relative rank of test scores.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#percentile_cont" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="percentile_cont">PERCENTILE_CONT(n)</a>
+            </h5>
+          </div>
+          <div id="percentile_cont" class="collapse">
+            <div class="card-body">
+              Calculates a percentile based on a continuous distribution of column values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score)
+               FROM test_scores;</code>
+                </pre>
+              </code>
+              This example uses the PERCENTILE_CONT() function to calculate the median test score.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-bitwise" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#bitwise-and" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="bitwise-and">&amp; (Bitwise AND)</a>
+            </h5>
+          </div>
+          <div id="bitwise-and" class="collapse">
+            <div class="card-body">
+              Performs a bitwise logical AND operation between two integer values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT 170 &amp; 75;</code>
+                </pre>
+              </code>
+              This example uses the &amp; operator to perform a bitwise AND operation between the values 170 and 75.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#bitwise-or" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="bitwise-or">| (Bitwise OR)</a>
+            </h5>
+          </div>
+          <div id="bitwise-or" class="collapse">
+            <div class="card-body">
+              Performs a bitwise logical OR operation between two integer values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT 170 | 75;</code>
+                </pre>
+              </code>
+              This example uses the | operator to perform a bitwise OR operation between the values 170 and 75.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#bitwise-xor" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="bitwise-xor">^ (Bitwise Exclusive OR)</a>
+            </h5>
+          </div>
+          <div id="bitwise-xor" class="collapse">
+            <div class="card-body">
+              Performs a bitwise logical exclusive OR operation between two integer values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT 170 ^ 75;</code>
+                </pre>
+              </code>
+              This example uses the ^ operator to perform a bitwise exclusive OR operation between the values 170 and 75.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#bitwise-not" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="bitwise-not">~ (Bitwise NOT)</a>
+            </h5>
+          </div>
+          <div id="bitwise-not" class="collapse">
+            <div class="card-body">
+              Performs a bitwise logical NOT operation on an integer value.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT ~170;</code>
+                </pre>
+              </code>
+              This example uses the ~ operator to perform a bitwise NOT operation on the value 170.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-pivotamento" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#pivot" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="pivot">PIVOT Operator</a>
+            </h5>
+          </div>
+          <div id="pivot" class="collapse">
+            <div class="card-body">
+              The PIVOT operator rotates a table-valued expression by turning unique values from one column into multiple columns in the output and performs aggregations on remaining column values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT *
+FROM (
+  SELECT year, month, amount
+  FROM sales
+) AS sales_data
+PIVOT (
+  SUM(amount)
+  FOR month IN ([Jan], [Feb], [Mar], [Apr], [May], [Jun], [Jul], [Aug], [Sep], [Oct], [Nov], [Dec])
+) AS pivot_table;</code>
+                </pre>
+              </code>
+              This example uses the PIVOT operator to transform the sales data from rows into columns, with each month becoming a separate column and the sales amount for each month being aggregated using the SUM function.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#unpivot" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="unpivot">UNPIVOT Operator</a>
+            </h5>
+          </div>
+          <div id="unpivot" class="collapse">
+            <div class="card-body">
+              The UNPIVOT operator performs the opposite operation to PIVOT, by rotating columns into rows.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT year, month, amount
+FROM sales
+UNPIVOT (
+  amount FOR month IN ([Jan], [Feb], [Mar], [Apr], [May], [Jun], [Jul], [Aug], [Sep], [Oct], [Nov], [Dec])
+) AS unpivot_table;</code>
+                </pre>
+              </code>
+              This example uses the UNPIVOT operator to transform the sales data from columns into rows, with each month becoming a separate row and the sales amount for each month being displayed in the 'amount' column.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-matematicas" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#abs" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="abs">ABS()</a>
+            </h5>
+          </div>
+          <div id="abs" class="collapse">
+            <div class="card-body">
+              Returns the absolute value of a numeric expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT ABS(-5);</code>
+                </pre>
+              </code>
+              This example uses the ABS() function to return the absolute value of -5.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#ceiling" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="ceiling">CEILING()</a>
+            </h5>
+          </div>
+          <div id="ceiling" class="collapse">
+            <div class="card-body">
+              Returns the smallest integer greater than or equal to a numeric expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT CEILING(5.3);</code>
+                </pre>
+              </code>
+              This example uses the CEILING() function to return the smallest integer greater than or equal to 5.3.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#degrees" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="degrees">DEGREES()</a>
+            </h5>
+          </div>
+          <div id="degrees" class="collapse">
+            <div class="card-body">
+              Converts a radian value into degrees.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT DEGREES(PI());</code>
+                </pre>
+              </code>
+              This example uses the DEGREES() function to convert the value of PI() from radians to degrees.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#exp" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="exp">EXP()</a>
+            </h5>
+          </div>
+          <div id="exp" class="collapse">
+            <div class="card-body">
+              Returns e raised to the power of a specified number.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT EXP(2);</code>
+                </pre>
+              </code>
+              This example uses the EXP() function to return e raised to the power of 2.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#floor" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="floor">FLOOR()</a>
+            </h5>
+          </div>
+          <div id="floor" class="collapse">
+            <div class="card-body">
+              Returns the largest integer less than or equal to a numeric expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT FLOOR(5.3);</code>
+                </pre>
+              </code>
+              This example uses the FLOOR() function to return the largest integer less than or equal to 5.3.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#log" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="log">LOG()</a>
+            </h5>
+          </div>
+          <div id="log" class="collapse">
+            <div class="card-body">
+              Returns the natural logarithm of a specified float expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LOG(10);</code>
+                </pre>
+              </code>
+              This example uses the LOG() function to return the natural logarithm of 10.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#log10" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="log10">LOG10()</a>
+            </h5>
+          </div>
+          <div id="log10" class="collapse">
+            <div class="card-body">
+              Returns the base-10 logarithm of a specified float expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LOG10(100);</code>
+                </pre>
+              </code>
+              This example uses the LOG10() function to return the base-10 logarithm of 100.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#pi" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="pi">PI()</a>
+            </h5>
+          </div>
+          <div id="pi" class="collapse">
+            <div class="card-body">
+              Returns the constant value of PI.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT PI();</code>
+                </pre>
+              </code>
+              This example uses the PI() function to return the constant value of PI.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#power" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="power">POWER()</a>
+            </h5>
+          </div>
+          <div id="power" class="collapse">
+            <div class="card-body">
+              Returns the value of a specified expression raised to a specified power.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT POWER(2,3);</code>
+                </pre>
+              </code>
+              This example uses the POWER() function to return the value of 2 raised to the power of 3.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#radians" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="radians">RADIANS()</a>
+            </h5>
+          </div>
+          <div id="radians" class="collapse">
+            <div class="card-body">
+              Converts a degree value into radians.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT RADIANS(180);</code>
+                </pre>
+              </code>
+              This example uses the RADIANS() function to convert a degree value of 180 into radians.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-manipulacao-strings" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#ascii" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="ascii">ASCII()</a>
+            </h5>
+          </div>
+          <div id="ascii" class="collapse">
+            <div class="card-body">
+              Returns the ASCII code value of the leftmost character of a character expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT ASCII('A');</code>
+                </pre>
+              </code>
+              This example uses the ASCII() function to return the ASCII code value of the character 'A'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#char" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="char">CHAR()</a>
+            </h5>
+          </div>
+          <div id="char" class="collapse">
+            <div class="card-body">
+              Converts an int ASCII code to a character.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT CHAR(65);</code>
+                </pre>
+              </code>
+              This example uses the CHAR() function to convert the ASCII code value 65 into a character.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#charindex" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="charindex">CHARINDEX()</a>
+            </h5>
+          </div>
+          <div id="charindex" class="collapse">
+            <div class="card-body">
+              Returns the starting position of the specified expression in a character string.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT CHARINDEX('is', 'This is an example');</code>
+                </pre>
+              </code>
+              This example uses the CHARINDEX() function to return the starting position of the substring 'is' within the string 'This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#concat" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="concat">CONCAT()</a>
+            </h5>
+          </div>
+          <div id="concat" class="collapse">
+            <div class="card-body">
+              Returns a string that is the result of concatenating two or more string values.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT CONCAT('This', ' is', ' an', ' example');</code>
+                </pre>
+              </code>
+              This example uses the CONCAT() function to concatenate four strings into one.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#concat_ws" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="concat_ws">CONCAT_WS()</a>
+            </h5>
+          </div>
+          <div id="concat_ws" class="collapse">
+            <div class="card-body">
+              Returns a string that is the result of concatenating two or more string values with a specified separator.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT CONCAT_WS(', ', 'This', 'is', 'an', 'example');</code>
+                </pre>
+              </code>
+              This example uses the CONCAT_WS() function to concatenate four strings into one, separated by a comma and space.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#left" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="left">LEFT()</a>
+            </h5>
+          </div>
+          <div id="left" class="collapse">
+            <div class="card-body">
+              Returns the left part of a character string with the specified number of characters.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LEFT('This is an example', 4);</code>
+                </pre>
+              </code>
+              This example uses the LEFT() function to return the leftmost four characters of the string 'This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#len" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="len">LEN()</a>
+            </h5>
+          </div>
+          <div id="len" class="collapse">
+            <div class="card-body">
+              Returns the number of characters of the specified string expression, excluding trailing blanks.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LEN('This is an example');</code>
+                </pre>
+              </code>
+              This example uses the LEN() function to return the number of characters in the string 'This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#lower" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="lower">LOWER()</a>
+            </h5>
+          </div>
+          <div id="lower" class="collapse">
+            <div class="card-body">
+              Returns a character expression after converting uppercase character data to lowercase.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LOWER('THIS IS AN EXAMPLE');</code>
+                </pre>
+              </code>
+              This example uses the LOWER() function to convert all uppercase characters in the string 'THIS IS AN EXAMPLE' into lowercase.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#upper" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="upper">UPPER()</a>
+            </h5>
+          </div>
+          <div id="upper" class="collapse">
+            <div class="card-body">
+              Returns a character expression after converting character data to uppercase.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT UPPER('This is an example');</code>
+                </pre>
+              </code>
+              This example uses the UPPER() function to convert all lowercase characters in the string 'This is an example' into uppercase.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#ltrim" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="ltrim">LTRIM()</a>
+            </h5>
+          </div>
+          <div id="ltrim" class="collapse">
+            <div class="card-body">
+              Removes leading spaces from a string.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT LTRIM('   This is an example');</code>
+                </pre>
+              </code>
+              This example uses the LTRIM() function to remove leading spaces from the string '   This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#nchar" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="nchar">NCHAR()</a>
+            </h5>
+          </div>
+          <div id="nchar" class="collapse">
+            <div class="card-body">
+              Returns the Unicode character with the specified integer code.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT NCHAR(65);</code>
+                </pre>
+              </code>
+              This example uses the NCHAR() function to return the Unicode character with the integer code 65.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#replace" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="replace">REPLACE()</a>
+            </h5>
+          </div>
+          <div id="replace" class="collapse">
+            <div class="card-body">
+              Replaces all occurrences of a specified string value with another string value.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT REPLACE('This is an example', 'is', 'was');</code>
+                </pre>
+              </code>
+              This example uses the REPLACE() function to replace all occurrences of the substring 'is' with 'was' in the string 'This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#replicate" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="replicate">REPLICATE()</a>
+            </h5>
+          </div>
+          <div id="replicate" class="collapse">
+            <div class="card-body">
+              Repeats a string expression a specified number of times.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT REPLICATE('abc', 3);</code>
+                </pre>
+              </code>
+              This example uses the REPLICATE() function to repeat the string 'abc' three times.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#reverse" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="reverse">REVERSE()</a>
+            </h5>
+          </div>
+          <div id="reverse" class="collapse">
+            <div class="card-body">
+              Returns a string with the character order reversed.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT REVERSE('Hello, World!');</code>
+                </pre>
+              </code>
+              This example uses the REVERSE() function to reverse the order of characters in the string 'Hello, World!'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#right" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="right">RIGHT()</a>
+            </h5>
+          </div>
+          <div id="right" class="collapse">
+            <div class="card-body">
+              Returns the right part of a character string with the specified number of characters.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT RIGHT('This is an example', 7);</code>
+                </pre>
+              </code>
+              This example uses the RIGHT() function to return the rightmost seven characters of the string 'This is an example'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#rtrim" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="rtrim">RTRIM()</a>
+            </h5>
+          </div>
+          <div id="rtrim" class="collapse">
+            <div class="card-body">
+              Removes trailing spaces from a string.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT RTRIM('This is an example   ');</code>
+                </pre>
+              </code>
+              This example uses the RTRIM() function to remove trailing spaces from the string 'This is an example   '.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#space" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="space">SPACE()</a>
+            </h5>
+          </div>
+          <div id="space" class="collapse">
+            <div class="card-body">
+              Returns a string consisting of the specified number of space characters.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT SPACE(5);</code>
+                </pre>
+              </code>
+              This example uses the SPACE() function to return a string consisting of five space characters.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#stuff" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="stuff">STUFF()</a>
+            </h5>
+          </div>
+          <div id="stuff" class="collapse">
+            <div class="card-body">
+              Deletes a specified length of characters in a string and inserts another string at the specified starting position.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT STUFF('Hello, World!', 8, 6, 'Universe');</code>
+                </pre>
+              </code>
+              This example uses the STUFF() function to delete six characters starting from the eighth position in the string 'Hello, World!' and insert the string 'Universe' in their place.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-data-hora" class="tab-pane fade">
+      <div class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#getdate" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="getdate">GETDATE()</a>
+            </h5>
+          </div>
+          <div id="getdate" class="collapse">
+            <div class="card-body">
+              Returns the current date and time of the computer on which the instance of SQL Server is running.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT GETDATE();</code>
+                </pre>
+              </code>
+              This example uses the GETDATE() function to return the current date and time.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#dateadd" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="dateadd">DATEADD()</a>
+            </h5>
+          </div>
+          <div id="dateadd" class="collapse">
+            <div class="card-body">
+              Adds a specified number of date parts (e.g. years, months, days) to a specified date.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT DATEADD(day, 1, GETDATE());</code>
+                </pre>
+              </code>
+              This example uses the DATEADD() function to add one day to the current date.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#datediff" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="datediff">DATEDIFF()</a>
+            </h5>
+          </div>
+          <div id="datediff" class="collapse">
+            <div class="card-body">
+              Returns the number of date parts (e.g. years, months, days) between two specified dates.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT DATEDIFF(day, '2022-01-01', '2022-02-01');</code>
+                </pre>
+              </code>
+              This example uses the DATEDIFF() function to calculate the number of days between two dates.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#datepart" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="datepart">DATEPART()</a>
+            </h5>
+          </div>
+          <div id="datepart" class="collapse">
+            <div class="card-body">
+              Returns an integer that represents the specified date part (e.g. year, month, day) of a specified date.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT DATEPART(month, GETDATE());</code>
+                </pre>
+              </code>
+              This example uses the DATEPART() function to return the current month.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#day" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="day">DAY()</a>
+            </h5>
+          </div>
+          <div id="day" class="collapse">
+            <div class="card-body">
+              Returns an integer that represents the day part of a specified date.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT DAY(GETDATE());</code>
+                </pre>
+              </code>
+              This example uses the DAY() function to return the current day.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#month" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="month">MONTH()</a>
+            </h5>
+          </div>
+          <div id="month" class="collapse">
+            <div class="card-body">
+              Returns an integer that represents the month part of a specified date.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT MONTH(GETDATE());</code>
+                </pre>
+              </code>
+              This example uses the MONTH() function to return the current month.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#year" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="year">YEAR()</a>
+            </h5>
+          </div>
+          <div id="year" class="collapse">
+            <div class="card-body">
+              Returns an integer that represents the year part of a specified date.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT YEAR(GETDATE());</code>
+                </pre>
+              </code>
+              This example uses the YEAR() function to return the current year.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-numericas" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#rand" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="rand">RAND()</a>
+            </h5>
+          </div>
+          <div id="rand" class="collapse">
+            <div class="card-body">
+              Returns a random float value from 0 through 1.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT RAND();</code>
+                </pre>
+              </code>
+              This example uses the RAND() function to return a random float value.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#round" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="round">ROUND()</a>
+            </h5>
+          </div>
+          <div id="round" class="collapse">
+            <div class="card-body">
+              Rounds a numeric expression to a specified length or precision.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT ROUND(5.35,1);</code>
+                </pre>
+              </code>
+              This example uses the ROUND() function to round the value of 5.35 to one decimal place.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#sign" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="sign">SIGN()</a>
+            </h5>
+          </div>
+          <div id="sign" class="collapse">
+            <div class="card-body">
+              Returns the positive (+1), zero (0), or negative (-1) sign of a numeric expression.
+              <code>
+                Example:
+                <pre class="highlight">
+                  <code>SELECT SIGN(-5);</code>
+                </pre>
+              </code>
+              This example uses the SIGN() function to return the sign of -5.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-conversao-dados" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#cast" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="cast">CAST()</a>
+            </h5>
+          </div>
+          <div id="cast" class="collapse">
+            <div class="card-body">
+              Converte um valor de um tipo de dados para outro tipo de dados.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT CAST('2023-06-18' AS DATE) AS 'data';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função CAST() para converter uma string em uma data.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#convert" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="convert">CONVERT()</a>
+            </h5>
+          </div>
+          <div id="convert" class="collapse">
+            <div class="card-body">
+              Converte um valor de um tipo de dados para outro tipo de dados. É semelhante à função CAST(), mas possui uma sintaxe diferente e pode ser usada com tipos de dados específicos do SQL Server.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT CONVERT(DATE, '2023-06-18') AS 'data';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função CONVERT() para converter uma string em uma data.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#parse" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="parse">PARSE()</a>
+            </h5>
+          </div>
+          <div id="parse" class="collapse">
+            <div class="card-body">
+              Converte uma string em um tipo de dados especificado usando uma cultura opcional.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT PARSE('18/06/2023' AS DATE USING 'pt-BR') AS 'data';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função PARSE() para converter uma string em uma data usando a cultura 'pt-BR'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#try-cast" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="try-cast">TRY_CAST()</a>
+            </h5>
+          </div>
+          <div id="try-cast" class="collapse">
+            <div class="card-body">
+              Funciona como a função CAST(), mas retorna NULL se a conversão falhar.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT TRY_CAST('abc' AS INT) AS 'numero';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função TRY_CAST() para tentar converter uma string em um número inteiro. Como a conversão falha, o resultado é NULL.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#try-convert" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="try-convert">TRY_CONVERT()</a>
+            </h5>
+          </div>
+          <div id="try-convert" class="collapse">
+            <div class="card-body">
+              Funciona como a função CONVERT(), mas retorna NULL se a conversão falhar.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT TRY_CONVERT(INT, 'abc') AS 'numero';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função TRY_CONVERT() para tentar converter uma string em um número inteiro. Como a conversão falha, o resultado é NULL.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#try-parse" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="try-parse">TRY_PARSE()</a>
+            </h5>
+          </div>
+          <div id="try-parse" class="collapse">
+            <div class="card-body">
+              Funciona como a função PARSE(), mas retorna NULL se a conversão falhar.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT TRY_PARSE('abc' AS INT USING 'en-US') AS 'numero';</code>
+                </pre>
+              </code>
+              Este exemplo usa a função TRY_PARSE() para tentar converter uma string em um número inteiro usando a cultura 'en-US'. Como a conversão falha, o resultado é NULL.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="funcoes-formatacao" class="tab-pane fade">
+      <div id="accordion" class="accordion">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#cast" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="cast">CAST()</a>
+            </h5>
+          </div>
+          <div id="cast" class="collapse">
+            <div class="card-body">
+              Converte um valor de um tipo de dados para outro tipo de dados.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT CAST('2023-06-18' AS DATE) AS 'data';</code>
+                </pre>
+              </code>
+              Neste exemplo, a função CAST() é usada para converter uma string em uma data.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#convert" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="convert">CONVERT()</a>
+            </h5>
+          </div>
+          <div id="convert" class="collapse">
+            <div class="card-body">
+              Converte um valor de um tipo de dados para outro tipo de dados.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT CONVERT(VARCHAR(10), GETDATE(), 101) AS 'data_formatada';</code>
+                </pre>
+              </code>
+              Neste exemplo, a função CONVERT() é usada para converter a data atual em uma string no formato 'mm/dd/aaaa'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#format" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="format">FORMAT()</a>
+            </h5>
+          </div>
+          <div id="format" class="collapse">
+            <div class="card-body">
+              Formata um valor com base em um formato especificado.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT FORMAT(GETDATE(), 'dd/MM/yyyy') AS 'data_formatada';</code>
+                </pre>
+              </code>
+              Neste exemplo, a função FORMAT() é usada para formatar a data atual no formato 'dd/MM/aaaa'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#to_char" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="to_char">TO_CHAR()</a>
+            </h5>
+          </div>
+          <div id="to_char" class="collapse">
+            <div class="card-body">
+              Converte um valor em uma string com base em um formato especificado.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY') AS 'data_formatada';</code>
+                </pre>
+              </code>
+              Neste exemplo, a função TO_CHAR() é usada para converter a data atual em uma string no formato 'DD/MM/AAAA'.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <a class="btn btn-link" href="#to_date" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="to_date">TO_DATE()</a>
+            </h5>
+          </div>
+          <div id="to_date" class="collapse">
+            <div class="card-body">
+              Converte uma string em uma data com base em um formato especificado.
+              <code>
+                Exemplo:
+                <pre class="highlight">
+                  <code>SELECT TO_DATE('18/06/2023', 'DD/MM/YYYY') AS 'data';</code>
+                </pre>
+              </code>
+              Neste exemplo, a função TO_DATE() é usada para converter a string '18/06/2023' em uma data.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
